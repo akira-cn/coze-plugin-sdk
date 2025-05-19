@@ -1,4 +1,4 @@
-import { sleep } from './utils.js';
+import { sleep } from './utils';
 
 interface ViduResult {
   task_id: string;

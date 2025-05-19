@@ -4,6 +4,6 @@
  */
 
 // 导出所有模块
-export * from './utils.js';
-export * from './image.js';
-export * from './video.js';
+export * from './utils';
+export * from './image';
+export * from './video';

@@ -1,4 +1,4 @@
-import { detectMimeType } from './utils.js';
+import { detectMimeType } from './utils';
 
 export async function fetchImageAsBase64(url: string): Promise<string> {
   const res = await fetch(url);

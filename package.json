@@ -1,12 +1,11 @@
 {
   "name": "coze-plugin-utils",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "实用工具函数库，为Coze插件提供支持",
-  "type": "module",
   "main": "dist/index.js",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
