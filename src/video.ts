@@ -30,16 +30,16 @@ export async function getViduResult(apiKey: string, taskId: string, timeout = 18
       headers,
       method: 'GET',
     })).json();
-    if(result.state === 'failed') {
+    state = result.state;
+    if(state === 'failed') {
       errorMsg = result.err_code;
       break;
     }
-    if(result.state === 'success') {
+    if(state === 'success') {
       creations = result.creations;
       break;
     }
     const timeCost = Date.now() - startTime;
-    state = result.state;
     if(timeCost > timeout) {
       state = 'timeout';
       break;
