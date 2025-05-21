@@ -12,7 +12,7 @@ interface ViduResult {
   errorMsg: string;
 }
 
-export async function getViduResult(apiKey: string, taskId: string): Promise<ViduResult> {
+export async function getViduResult(apiKey: string, taskId: string, timeout = 180000): Promise<ViduResult> {
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `Token ${apiKey}`,
@@ -40,7 +40,8 @@ export async function getViduResult(apiKey: string, taskId: string): Promise<Vid
     }
     const timeCost = Date.now() - startTime;
     state = result.state;
-    if(timeCost > 60000) {
+    if(timeCost > timeout) {
+      state = 'timeout';
       break;
     }
   } while(1);
