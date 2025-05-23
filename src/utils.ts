@@ -3,29 +3,83 @@ export function sleep(ms: number): Promise<void> {
 }
 
 export function detectMimeType(buffer: Buffer): string | null {
-  const hex = buffer.subarray(0, 16).toString('hex').toUpperCase();
+  const header = new Uint8Array(buffer.slice(0, 20));
 
-  // 图片
-  if (hex.startsWith('FFD8FF')) return 'image/jpeg';
-  if (hex.startsWith('89504E470D0A1A0A')) return 'image/png';
-  if (hex.startsWith('47494638')) return 'image/gif';
-  if (hex.startsWith('424D')) return 'image/bmp';
-  if (hex.startsWith('52494646') && hex.includes('57454250')) return 'image/webp';
+  function isJpeg(): boolean {
+    return header[0] === 0xFF && header[1] === 0xD8 && header[2] === 0xFF;
+  }
 
-  // 音频
-  if (hex.startsWith('494433')) return 'audio/mpeg'; // MP3 with ID3 tag
-  if (hex.startsWith('FFF')) return 'audio/mpeg'; // MP3 without ID3 tag (frame sync)
-  if (hex.startsWith('4F676753')) return 'audio/ogg'; // OGG
-  if (hex.startsWith('664C6143')) return 'audio/flac'; // FLAC
-  if (hex.startsWith('52494646') && hex.includes('41564845')) return 'audio/wav'; // WAV (RIFF....WAVE)
-  if (hex.startsWith('664C6143')) return 'audio/flac'; // FLAC
+  function isPng(): boolean {
+    return header.slice(0, 8).toString() === '\x89PNG\r\n\x1A\n';
+  }
 
-  // 视频
-  if (hex.startsWith('000000186674797069736F6D')) return 'video/mp4'; // MP4 (ISO Base Media)
-  if (hex.startsWith('1A45DFA3')) return 'video/webm'; // WEBM/MKV (Matroska)
-  if (hex.startsWith('000001BA')) return 'video/mpeg'; // MPEG-PS
-  if (hex.startsWith('000001B3')) return 'video/mpeg'; // MPEG-1
-  if (hex.startsWith('52494646') && hex.includes('41564920')) return 'video/avi'; // AVI (RIFF....AVI )
+  function isGif(): boolean {
+    return String.fromCharCode(...header.slice(0, 3)) === 'GIF';
+  }
+
+  function isBmp(): boolean {
+    return header[0] === 0x42 && header[1] === 0x4D; // 'BM'
+  }
+
+  function isWebp(): boolean {
+    const riff = String.fromCharCode(...header.slice(0, 4));
+    const webp = String.fromCharCode(...header.slice(8, 12));
+    return riff === 'RIFF' && webp === 'WEBP';
+  }
+
+  function isWav(): boolean {
+    const riff = String.fromCharCode(...header.slice(0, 4));
+    const wave = String.fromCharCode(...header.slice(8, 12));
+    return riff === 'RIFF' && wave === 'WAVE';
+  }
+
+  function isMp3(): boolean {
+    return header[0] === 0x49 && header[1] === 0x44 && header[2] === 0x33 // ID3 tag
+        || (header[0] === 0xFF && (header[1] & 0xE0) === 0xE0); // Frame sync
+  }
+
+  function isOgg(): boolean {
+    return String.fromCharCode(...header.slice(0, 4)) === 'OggS';
+  }
+
+  function isFlac(): boolean {
+    return String.fromCharCode(...header.slice(0, 4)) === 'fLaC';
+  }
+
+  function isMp4(): boolean {
+    return header.slice(4, 8).toString() === 'ftyp';
+  }
+
+  function isWebm(): boolean {
+    return header[0] === 0x1A && header[1] === 0x45 && header[2] === 0xDF && header[3] === 0xA3;
+  }
+
+  function isMpeg(): boolean {
+    return header[0] === 0x00 && header[1] === 0x00 && header[2] === 0x01
+        && (header[3] === 0xBA || header[3] === 0xB3);
+  }
+
+  function isAvi(): boolean {
+    const riff = String.fromCharCode(...header.slice(0, 4));
+    const avi = String.fromCharCode(...header.slice(8, 11));
+    return riff === 'RIFF' && avi === 'AVI';
+  }
+
+  if (isJpeg()) return 'image/jpeg';
+  if (isPng()) return 'image/png';
+  if (isGif()) return 'image/gif';
+  if (isBmp()) return 'image/bmp';
+  if (isWebp()) return 'image/webp';
+
+  if (isMp3()) return 'audio/mpeg';
+  if (isOgg()) return 'audio/ogg';
+  if (isFlac()) return 'audio/flac';
+  if (isWav()) return 'audio/wav';
+
+  if (isMp4()) return 'video/mp4';
+  if (isWebm()) return 'video/webm';
+  if (isMpeg()) return 'video/mpeg';
+  if (isAvi()) return 'video/avi';
 
   return null;
 }
