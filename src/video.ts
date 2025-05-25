@@ -1,8 +1,17 @@
 import { sleep } from './utils';
 
+enum ViduResultState {
+  created = 'created',
+  queueing = 'queueing',
+  processing = 'processing',
+  success = 'success',
+  failed = 'failed',
+  timeout = 'timeout',
+}
+
 interface ViduResult {
   task_id: string;
-  state: string;
+  state: ViduResultState;
   creations: {
     id: string;
     cover_url: string;
@@ -22,7 +31,7 @@ export async function getViduResult(apiKey: string, taskId: string, timeout = 18
   const startTime = Date.now();
   let errorMsg = '';
   let creations: { id: string, cover_url: string, url: string, watermarked_url: string }[] = [];
-  let state = 'pending';
+  let state: ViduResultState = ViduResultState.created;
 
   do {
     await sleep(100); // sleep 100ms
@@ -41,7 +50,7 @@ export async function getViduResult(apiKey: string, taskId: string, timeout = 18
     }
     const timeCost = Date.now() - startTime;
     if(timeCost > timeout) {
-      state = 'timeout';
+      state = ViduResultState.timeout;
       break;
     }
   } while(1);
