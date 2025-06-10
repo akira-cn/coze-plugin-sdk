@@ -7,3 +7,4 @@
 export * from './utils';
 export * from './image';
 export * from './video';
+export * from './aliyun.oss';
