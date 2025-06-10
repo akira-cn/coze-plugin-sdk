@@ -18,6 +18,8 @@ export interface OssConfig {
 
 export async function uploadFile(ossConfig: OssConfig, buffer: Buffer | string, filename: string, dir: string = 'resource'): Promise<UploadFileResponse> {
   dir = `${dir}/${Math.random().toString(36).slice(2, 12)}`;
+  filename = decodeURI(filename);
+  buffer = typeof buffer ==='string'? Buffer.from(buffer) : buffer;
   
   const client = new Client({
     region: ossConfig.OSS_REGION, // 示例：'oss-cn-hangzhou'，填写Bucket所在地域。
