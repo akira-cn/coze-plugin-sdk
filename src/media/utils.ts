@@ -1,7 +1,3 @@
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export function detectMimeType(buffer: Buffer): string | null {
   const header = new Uint8Array(buffer.slice(0, 20));
 

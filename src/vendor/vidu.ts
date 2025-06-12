@@ -1,4 +1,5 @@
-import { sleep } from './utils';
+import { sleep } from '../core';
+import { detectMimeType } from '../media';
 
 enum ViduResultState {
   created = 'created',
@@ -19,6 +20,24 @@ interface ViduResult {
     watermarked_url: string;
   }[];
   errorMsg: string;
+}
+
+export async function fetchImageAsBase64(url: string): Promise<string> {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch image. Status: ${res.status}`);
+  }
+
+  const arrayBuffer = await res.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const mime = detectMimeType(buffer);
+
+  if (!mime) {
+    throw new Error('Unsupported or unknown image type.');
+  }
+
+  const base64 = buffer.toString('base64');
+  return `data:${mime};base64,${base64}`;
 }
 
 export async function getViduResult(apiKey: string, taskId: string, timeout = 180000): Promise<ViduResult> {

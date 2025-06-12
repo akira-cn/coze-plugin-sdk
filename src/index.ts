@@ -4,7 +4,6 @@
  */
 
 // 导出所有模块
-export * from './utils';
-export * from './image';
-export * from './video';
-export * from './aliyun.oss';
+export * from './core';
+export * from './media';
+export * from './vendor';

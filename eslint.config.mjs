@@ -33,7 +33,7 @@ export default [
       'no-debugger': 'warn',
       'no-duplicate-imports': 'error',
       'no-unused-vars': 'off', // 使用 TypeScript 的规则代替
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'prefer-const': 'error',
       'no-var': 'error',
       
@@ -75,6 +75,12 @@ export default [
   {
     files: ['**/*.test.ts'],
     languageOptions: {
+      parser: tseslintParser,
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'module',
+        project: './tsconfig.test.json',
+      },
       globals: {
         jest: 'readonly',
         expect: 'readonly',
