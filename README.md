@@ -4,32 +4,65 @@
 
 ## 功能特点
 
+- **全局配置管理**：提供统一的配置管理机制，支持设置和获取全局配置
 - **实用工具函数**：提供常用的辅助函数，如 `sleep` 延时函数
 - **MIME 类型检测**：支持检测多种文件类型的 MIME 类型
 - **图像处理**：支持图像获取和 Base64 转换
-- **视频处理**：支持与 Vidu API 集成的视频处理功能
+- **音视频处理**：
+  - 音频格式转换（支持 mp3、wav、ogg、flac 等格式）
+  - 视频与音频合并
+  - 视频字幕添加（ASS 格式）
+  - 多个视频文件合并
+- **第三方 API 集成**：支持与 Vidu API 集成的视频处理功能
 
 ## 安装
 
 使用 npm 安装：
 
 ```bash
-npm install coze-plugin-utils
+npm install coze-plugin-sdk
 ```
 
 或使用 yarn：
 
 ```bash
-yarn add coze-plugin-utils
+yarn add coze-plugin-sdk
 ```
 
 或使用 pnpm：
 
 ```bash
-pnpm add coze-plugin-utils
+pnpm add coze-plugin-sdk
 ```
 
 ## 使用示例
+
+### 配置管理
+
+```typescript
+import { setGlobalConfig, getGlobalConfig } from 'coze-plugin-sdk';
+
+// 设置全局配置
+setGlobalConfig({
+  baseUrl: 'https://custom-api.coze.cn',
+  jwt: {
+    appId: 'your-app-id',
+    userId: 'your-user-id',
+    keyid: 'your-key-id',
+    privateKey: 'your-private-key'
+  }
+});
+
+// 获取配置
+const config = getGlobalConfig();
+console.log(`API 基础地址: ${config.baseUrl}`);
+
+// 按键获取特定配置
+const jwt = getGlobalConfig('jwt');
+if (jwt) {
+  console.log(`应用 ID: ${jwt.appId}`);
+}
+```
 
 ### 基础工具函数
 
@@ -66,7 +99,61 @@ async function getImage() {
 }
 ```
 
+### 音频处理
+
+```typescript
+import { convertAudio } from 'coze-plugin-utils';
+
+async function processAudio() {
+  try {
+    // 将音频从 WAV 格式转换为 MP3 格式
+    const outputPath = await convertAudio('https://example.com/audio.wav', 'mp3');
+    console.log(`音频已转换，输出路径: ${outputPath}`);
+    
+    // 自动检测源格式并转换为 OGG 格式
+    const oggPath = await convertAudio('https://example.com/unknown-audio', 'ogg');
+    console.log(`音频已转换为 OGG 格式: ${oggPath}`);
+  } catch (error) {
+    console.error('音频处理失败:', error);
+  }
+}
+```
+
 ### 视频处理
+
+```typescript
+import { mergeVideoAndAudio, burnASSSubtitleToVideo, joinVideos } from 'coze-plugin-utils';
+
+async function processVideos() {
+  try {
+    // 合并视频和音频
+    const mergedPath = await mergeVideoAndAudio(
+      'https://example.com/video.mp4',
+      'https://example.com/audio.mp3'
+    );
+    console.log(`视频和音频已合并: ${mergedPath}`);
+    
+    // 添加字幕到视频
+    const subtitledPath = await burnASSSubtitleToVideo(
+      'https://example.com/video.mp4',
+      [{ text: '这是一个示例字幕', effect: '{\\pos(960,1000)}', start: '0:00:01.00', end: '0:00:05.00' }]
+    );
+    console.log(`字幕已添加到视频: ${subtitledPath}`);
+    
+    // 合并多个视频文件
+    const joinedPath = await joinVideos([
+      'https://example.com/video1.mp4',
+      'https://example.com/video2.mp4',
+      'https://example.com/video3.mp4'
+    ]);
+    console.log(`多个视频已合并: ${joinedPath}`);
+  } catch (error) {
+    console.error('视频处理失败:', error);
+  }
+}
+```
+
+### 第三方 API 集成
 
 ```typescript
 import { getViduResult } from 'coze-plugin-utils';
@@ -93,18 +180,113 @@ async function checkVideoTask() {
 
 ## API 文档
 
+### 配置管理 (config.ts)
+
+配置管理模块提供了统一的全局配置管理功能，允许设置和获取全局配置，所有工具依赖的配置都可以通过该模块获取。
+
+#### 配置结构
+
+```typescript
+interface IGlobalConfig {
+  baseUrl: string; // 默认值 https://api.coze.cn
+  workflows?: IWorkflows;
+  jwt?: IJWTConfig;
+}
+
+interface IJWTConfig {
+  appId: string;
+  userId: string;
+  keyid: string;
+  privateKey: string;
+}
+
+interface IWorkflows {
+  [key: string]: string;
+  fileUploader?: string; // 用来上传临时文件
+}
+```
+
+#### API
+
+- `setGlobalConfig(config: Partial<IGlobalConfig>): IGlobalConfig` - 设置全局配置，将传入的配置与现有配置合并
+- `setGlobalConfig<K extends keyof IGlobalConfig>(key: K, config: ...): IGlobalConfig` - 设置特定配置项
+- `getGlobalConfig(): IGlobalConfig` - 获取完整的全局配置
+- `getGlobalConfig<K extends keyof IGlobalConfig>(key: K): IGlobalConfig[K]` - 获取特定配置项
+- `resetGlobalConfig(): IGlobalConfig` - 重置全局配置到默认值
+
+#### 特性
+
+- 支持深度合并嵌套对象（如 workflows 和 jwt）
+- 返回配置副本，防止直接修改
+- 类型安全，提供完整的 TypeScript 类型支持
+- 支持按键设置和获取特定配置项
+
+#### 使用示例
+
+```typescript
+import { setGlobalConfig, getGlobalConfig } from 'coze-plugin-utils';
+
+// 设置整个配置对象
+setGlobalConfig({
+  baseUrl: 'https://custom-api.coze.cn',
+  jwt: {
+    appId: 'your-app-id',
+    keyid: 'your-key-id',
+    privateKey: 'your-private-key'
+  }
+});
+
+// 设置特定配置项
+setGlobalConfig('baseUrl', 'https://another-api.coze.cn');
+
+// 获取完整配置
+const config = getGlobalConfig();
+console.log(config.baseUrl);
+
+// 获取特定配置项
+const jwt = getGlobalConfig('jwt');
+if (jwt) {
+  // 使用 JWT 配置进行认证
+}
+```
+
 ### 工具函数 (utils.ts)
 
 - `sleep(ms: number): Promise<void>` - 延迟指定的毫秒数
 - `detectMimeType(buffer: Buffer): string | null` - 通过文件头检测 MIME 类型，支持常见的图像、音频和视频格式
 
-### 图像处理 (image.ts)
+### 图像处理 (vendor/vidu.ts)
 
-- `fetchImageAsBase64(url: string): Promise<string>` - 获取远程图像并转换为 Base64 格式的 Data URL
+- `fetchImageAsBase64(url: string): Promise<string>` - 获取图像并转换为 Base64 格式
 
-### 视频处理 (video.ts)
+### 音频处理 (media/ffmpeg.ts)
 
-- `getViduResult(apiKey: string, taskId: string): Promise<ViduResult>` - 获取 Vidu API 的视频处理任务结果
+- `convertAudio(url: string, desType: string, srcType?: string): Promise<string>` - 将音频从一种格式转换为另一种格式
+  - `url`: 输入音频文件网址
+  - `desType`: 目标音频格式 (例如: 'mp3', 'wav', 'ogg', 'flac')
+  - `srcType`: 可选，源音频格式。如果未提供，将通过检测文件头来确定
+
+### 视频处理 (media/ffmpeg.ts)
+
+- `mergeVideoAndAudio(videoUrl: string, audioUrl: string, audioType?: string): Promise<string>` - 将视频和音频合并为一个文件
+  - `videoUrl`: 视频文件网址
+  - `audioUrl`: 音频文件网址
+  - `audioType`: 可选，音频类型 ('wav', 'mp3', 'ogg', 'm4a', 'aac')
+
+- `burnASSSubtitleToVideo(videoUrl: string, contents: IAssEvents[]): Promise<string>` - 将 ASS 格式字幕烧录到视频中
+  - `videoUrl`: 视频文件网址
+  - `contents`: 字幕内容数组，包含文本、效果、时间等信息
+
+- `joinVideos(urls: string[], outputFormat?: string): Promise<string>` - 将多个视频文件按顺序合并成一个视频
+  - `urls`: 视频文件URL数组，按照需要合并的顺序排列
+  - `outputFormat`: 可选，输出视频格式，默认为 'mp4'
+
+### 第三方 API 集成 (vendor/vidu.ts)
+
+- `getViduResult(apiKey: string, taskId: string, timeout?: number): Promise<ViduResult>` - 获取 Vidu 视频处理任务的结果
+  - `apiKey`: Vidu API 密钥
+  - `taskId`: 任务 ID
+  - `timeout`: 可选，超时时间（毫秒），默认为 180000
 
 ## 许可证
 
