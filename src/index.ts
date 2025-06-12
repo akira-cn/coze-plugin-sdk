@@ -7,3 +7,6 @@
 export * from './core';
 export * from './media';
 export * from './vendor';
+
+// 导出类型
+export * from './types/config.d';

@@ -3,7 +3,7 @@
  * 提供设置和获取全局配置的功能
  */
 
-import { IGlobalConfig, IJWTConfig, IWorkflows, IOSSConfig } from '../types/config';
+import { IGlobalConfig, IJWTConfig, IWorkflows, IOSSConfig, IBrowserConfig, IViduConfig } from '../types/config';
 
 // 默认配置值
 const DEFAULT_CONFIG: IGlobalConfig = {
@@ -66,7 +66,7 @@ export function setGlobalConfig(config: Partial<IGlobalConfig>): IGlobalConfig;
  */
 export function setGlobalConfig<K extends keyof IGlobalConfig>(
   key: K,
-  config: K extends 'baseUrl' ? string : K extends 'jwt' ? Partial<IJWTConfig> : K extends 'workflows' ? Partial<IWorkflows> : K extends 'aliyun'? Partial<IOSSConfig> : never,
+  config: K extends 'baseUrl' ? string : K extends 'jwt' ? Partial<IJWTConfig> : K extends 'workflows' ? Partial<IWorkflows> : K extends 'aliyun'? Partial<IOSSConfig> : K extends 'browser' ? Partial<IBrowserConfig> : K extends 'vidu' ? Partial<IViduConfig> : never,
 ): IGlobalConfig;
 
 /**
@@ -74,7 +74,7 @@ export function setGlobalConfig<K extends keyof IGlobalConfig>(
  */
 export function setGlobalConfig<K extends keyof IGlobalConfig>(
   keyOrConfig: K | Partial<IGlobalConfig>,
-  config?: K extends 'baseUrl' ? string : K extends 'jwt' ? Partial<IJWTConfig> : K extends 'workflows' ? Partial<IWorkflows> : K extends 'aliyun'? Partial<IOSSConfig> : never,
+  config?: K extends 'baseUrl' ? string : K extends 'jwt' ? Partial<IJWTConfig> : K extends 'workflows' ? Partial<IWorkflows> : K extends 'aliyun'? Partial<IOSSConfig> : K extends 'browser' ? Partial<IBrowserConfig> : K extends 'vidu' ? Partial<IViduConfig> : never,
 ): IGlobalConfig {
   // 检查是否是直接传入配置对象的情况
   if (typeof keyOrConfig === 'object' && config === undefined) {
@@ -97,7 +97,7 @@ export function setGlobalConfig<K extends keyof IGlobalConfig>(
     
     // 验证 key 是否有效
     if (!Object.prototype.hasOwnProperty.call(DEFAULT_CONFIG, key) 
-      && key !== 'jwt' && key !== 'workflows' && key !== 'aliyun') {
+      && key !== 'jwt' && key !== 'workflows' && key !== 'aliyun' && key !== 'browser' && key !== 'vidu') {
       throw new Error(`无效的配置键: ${String(key)}`);
     }
 
@@ -114,6 +114,14 @@ export function setGlobalConfig<K extends keyof IGlobalConfig>(
       globalConfig.aliyun.oss = { ...globalConfig.aliyun.oss, ...(config as IOSSConfig).oss };
     } else if (key === 'aliyun' &&!globalConfig.aliyun) {
       globalConfig.aliyun = config as IOSSConfig;
+    } else if (key === 'browser' && globalConfig.browser) {
+      globalConfig.browser = { ...globalConfig.browser, ...(config as IBrowserConfig) };
+    } else if (key === 'browser' && !globalConfig.browser) {
+      globalConfig.browser = config as IBrowserConfig;
+    } else if (key === 'vidu' && globalConfig.vidu) {
+      globalConfig.vidu = { ...globalConfig.vidu, ...(config as IViduConfig) };
+    } else if (key === 'vidu' && !globalConfig.vidu) {
+      globalConfig.vidu = config as IViduConfig;
     } else {
       (globalConfig as any)[key] = config;
     }
@@ -151,7 +159,7 @@ export function getGlobalConfig<K extends keyof IGlobalConfig>(key: K): IGlobalC
 export function getGlobalConfig<K extends keyof IGlobalConfig>(key?: K): IGlobalConfig | IGlobalConfig[K] {
   if (key !== undefined) {
     // 验证 key 是否有效
-    if (!Object.prototype.hasOwnProperty.call(DEFAULT_CONFIG, key) && key !== 'jwt' && key !== 'workflows' && key !== 'aliyun') {
+    if (!Object.prototype.hasOwnProperty.call(DEFAULT_CONFIG, key) && key !== 'jwt' && key !== 'workflows' && key !== 'aliyun' && key !== 'browser' && key !== 'vidu') {
       throw new Error(`无效的配置键: ${String(key)}`);
     }
     

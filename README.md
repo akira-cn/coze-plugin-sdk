@@ -156,14 +156,74 @@ async function processVideos() {
 ### 第三方 API 集成
 
 ```typescript
-import { getViduResult } from 'coze-plugin-utils';
+import { setGlobalConfig, vidu, getViduResult } from 'coze-plugin-utils';
+
+// 设置全局配置
+setGlobalConfig('vidu', {
+  apiKey: 'your_vidu_api_key'
+});
+
+async function generateVideo() {
+  try {
+    // 根据文本生成视频
+    const textVideoResult = await vidu.textToVideo({
+      model: 'vidu1.5',
+      prompt: '一朵花开在山崖上',
+      bgm: true,
+    });
+    console.log('文本生成视频结果:', textVideoResult);
+    
+    // 根据图片生成视频
+    const imageVideoResult = await vidu.imageToVideo({
+      model: 'vidu1.5',
+      prompt: '花朵绽放',
+      image: 'https://example.com/flower.jpg',
+      bgm: true,
+    });
+    console.log('图片生成视频结果:', imageVideoResult);
+    
+    // 根据起始和结束图片生成视频
+    const startEndVideoResult = await vidu.startEndToVideo({
+      model: 'vidu1.5',
+      prompt: '花朵从含苞到绽放',
+      start_image: 'https://example.com/flower_bud.jpg',
+      end_image: 'https://example.com/flower_bloom.jpg',
+      bgm: true,
+    });
+    console.log('起始结束图片生成视频结果:', startEndVideoResult);
+    
+    // 根据参考视频生成新视频
+    const referenceVideoResult = await vidu.referenceToVideo({
+      model: 'vidu1.5',
+      prompt: '花朵在风中摇曳',
+      reference_video: 'https://example.com/flower_video.mp4',
+      bgm: true,
+    });
+    console.log('参考视频生成结果:', referenceVideoResult);
+    
+    // 生成音频
+    const audioResult = await vidu.textToAudio({
+      model: 'vidu_audio',
+      prompt: '轻柔的钢琴曲',
+      duration: 30, // 30秒
+    });
+    console.log('文本生成音频结果:', audioResult);
+  } catch (error) {
+    console.error('生成失败:', error);
+  }
+}
 
 async function checkVideoTask() {
-  const apiKey = 'your_vidu_api_key';
   const taskId = 'your_task_id';
   
   try {
-    const result = await getViduResult(apiKey, taskId);
+    // 方法1：使用全局配置获取视频处理结果
+    const result = await getViduResult(taskId);
+    
+    // 方法2：直接传入apiKey
+    const apiKey = 'your_vidu_api_key';
+    const result2 = await getViduResult(apiKey, taskId);
+    
     if (result.state === 'success') {
       console.log('视频处理成功:', result.creations);
     } else {
@@ -283,7 +343,74 @@ if (jwt) {
 
 ### 第三方 API 集成 (vendor/vidu.ts)
 
-- `getViduResult(apiKey: string, taskId: string, timeout?: number): Promise<ViduResult>` - 获取 Vidu 视频处理任务的结果
+#### 配置 Vidu API
+
+```typescript
+import { setGlobalConfig } from 'coze-plugin-utils';
+
+// 设置 Vidu API 密钥
+setGlobalConfig('vidu', {
+  apiKey: 'your_vidu_api_key'
+});
+```
+
+#### 视频生成 API
+
+- `textToVideo(options: IViduCreationOptions): Promise<IViduResult | { errorMsg: unknown }>` - 根据文本提示生成视频
+  - `options.model`: 模型名称，如 'vidu1.5'
+  - `options.prompt`: 文本提示
+  - `options.bgm`: 是否添加背景音乐
+  - `options.seed`: 可选，随机种子
+  - `options.callback_url`: 可选，回调 URL
+
+- `imageToVideo(options: IViduCreationOptions): Promise<IViduResult | { errorMsg: unknown }>` - 根据图片生成视频
+  - `options.model`: 模型名称
+  - `options.prompt`: 文本提示
+  - `options.image`: 图片 URL 或 Base64 字符串
+  - `options.bgm`: 可选，是否添加背景音乐
+  - `options.seed`: 可选，随机种子
+  - `options.callback_url`: 可选，回调 URL
+
+- `startEndToVideo(options: IViduCreationOptions): Promise<IViduResult | { errorMsg: unknown }>` - 根据起始和结束图片生成视频
+  - `options.model`: 模型名称
+  - `options.prompt`: 文本提示
+  - `options.start_image`: 起始图片 URL 或 Base64 字符串
+  - `options.end_image`: 结束图片 URL 或 Base64 字符串
+  - `options.bgm`: 可选，是否添加背景音乐
+  - `options.seed`: 可选，随机种子
+  - `options.callback_url`: 可选，回调 URL
+
+- `referenceToVideo(options: IViduCreationOptions): Promise<IViduResult | { errorMsg: unknown }>` - 根据参考视频生成新视频
+  - `options.model`: 模型名称
+  - `options.prompt`: 文本提示
+  - `options.reference_video`: 参考视频 URL
+  - `options.bgm`: 可选，是否添加背景音乐
+  - `options.seed`: 可选，随机种子
+  - `options.callback_url`: 可选，回调 URL
+
+#### 音频生成 API
+
+- `textToAudio(options: IAudioTextOptions): Promise<IViduResult | { errorMsg: unknown }>` - 根据文本生成音频
+  - `options.model`: 模型名称
+  - `options.prompt`: 文本提示
+  - `options.duration`: 可选，音频时长
+  - `options.seed`: 可选，随机种子
+  - `options.callback_url`: 可选，回调 URL
+
+- `timingToAudio(options: IAudioTimingOptions): Promise<IViduResult | { errorMsg: unknown }>` - 根据时间点提示生成音频
+  - `options.model`: 模型名称
+  - `options.timing_prompts`: 时间点提示数组
+  - `options.duration`: 可选，音频时长
+  - `options.seed`: 可选，随机种子
+  - `options.callback_url`: 可选，回调 URL
+
+#### 任务结果查询
+
+- `getViduResult(taskId: string, timeout?: number): Promise<IViduResult>` - 获取 Vidu 视频处理任务的结果（使用全局配置中的apiKey）
+  - `taskId`: 任务 ID
+  - `timeout`: 可选，超时时间（毫秒），默认为 180000
+
+- `getViduResult(apiKey: string, taskId: string, timeout?: number): Promise<IViduResult>` - 获取 Vidu 视频处理任务的结果（直接传入apiKey）
   - `apiKey`: Vidu API 密钥
   - `taskId`: 任务 ID
   - `timeout`: 可选，超时时间（毫秒），默认为 180000

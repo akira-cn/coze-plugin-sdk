@@ -113,7 +113,7 @@ export async function uploadFile(tmpFile: string, autoClear = true): Promise<{ u
   }
 }
 
-function createTmpDir(): string {
+export function createTempDir(): string {
   const tempDir = path.join('/', 'tmp', uuidv4());
   fs.mkdirSync(tempDir, { recursive: true });
   return tempDir;
@@ -125,7 +125,7 @@ interface ILocalFile {
   createOutput: (ext: string) => string;
 }
 
-export async function downloadFile(url: string, filename: string, tempDir = createTmpDir()): Promise<ILocalFile> {
+export async function downloadFile(url: string, filename: string, tempDir = createTempDir()): Promise<ILocalFile> {
   if(url.startsWith('/tmp')) {
     // 这是本地文件，直接返回，这样的话才能允许ffmpeg的几个方法串行使用
     return {
@@ -166,7 +166,7 @@ export async function downloadFile(url: string, filename: string, tempDir = crea
 }
 
 export async function downloadFiles(files: { url:string, filename:string }[]): Promise<ILocalFile[]> {
-  const tempDir = createTmpDir();
+  const tempDir = createTempDir();
   const ret = await Promise.all(files.map((file) => downloadFile(file.url, file.filename, tempDir)));
   return ret;
 }
