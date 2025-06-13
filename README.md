@@ -25,13 +25,13 @@
 
 进入 Coze 开发平台，左侧菜单切换到 API，选择"授权 > OAuth 应用 > 创建新应用”。
 
-![](https://bot.hupox.com/resource/jwk52htao5/1b6addfc14004accbc1f5830b5e91e78.png)
+<img src="https://bot.hupox.com/resource/jwk52htao5/1b6addfc14004accbc1f5830b5e91e78.png" width=450>
 
 应用创建完成后，选择“下载示例文件”，将文件中的 `private_key` 和 `public_key_id` 保存下来。
 
 2. 切换到“工作空间 > 资源库 > 新资源 > 工作流”，创建一个工作流。
 
-![](https://bot.hupox.com/resource/a7kodzrskr/550671d266e14bbe8b052a8ffc7a41d5.png)
+<img src="https://bot.hupox.com/resource/bgxxqktwc7/dc03fdfb903942e6a3833b4c4cd76a43.png" width=450>
 
 编辑这个工作流，直接连接开始节点和结束节点：
 
