@@ -415,6 +415,100 @@ setGlobalConfig('vidu', {
   - `taskId`: 任务 ID
   - `timeout`: 可选，超时时间（毫秒），默认为 180000
 
+### Browser 模块 (browser.ts)
+
+Browser 模块提供基于 Puppeteer 的浏览器自动化功能，支持 HTML 转视频和截图等功能。
+
+#### 配置
+
+```typescript
+import { setGlobalConfig } from 'coze-plugin-utils';
+
+// 设置 Browser API 密钥（Browserless Token）
+setGlobalConfig('browser', {
+  apiKey: 'your_browserless_token'
+});
+```
+
+#### API
+
+- `htmlToVideo(options: ConvertOptions): Promise<string>` - 将 HTML 代码转换为视频
+  - `options.code`: HTML 代码字符串
+  - `options.duration`: 视频时长（秒）
+  - `options.width`: 可选，视频宽度
+  - `options.height`: 可选，视频高度
+  - `options.deviceScaleFactor`: 可选，设备缩放因子，默认为 1
+  - `options.sample_ratio`: 可选，采样比率，默认为 10
+  - 返回：视频文件的临时路径
+
+- `htmlToScreenshot(options: ScreenshotOptions): Promise<string>` - 将 HTML 代码转换为截图
+  - `options.code`: HTML 代码字符串
+  - `options.width`: 可选，截图宽度
+  - `options.height`: 可选，截图高度
+  - `options.deviceScaleFactor`: 可选，设备缩放因子，默认为 1
+  - `options.delay`: 可选，延迟毫秒数，默认为 500
+  - 返回：图片文件的临时路径
+
+#### 使用示例
+
+```typescript
+import { browser, setGlobalConfig } from 'coze-plugin-utils';
+
+// 配置 Browser API Key
+setGlobalConfig('browser', {
+  apiKey: 'your-browserless-token'
+});
+
+async function generateVideo() {
+  const htmlCode = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); }
+        .container { text-align: center; padding: 50px; color: white; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>Hello World!</h1>
+        <p>这是一个动态视频演示</p>
+      </div>
+    </body>
+    </html>
+  `;
+
+  // 生成视频
+  const videoPath = await browser.htmlToVideo({
+    code: htmlCode,
+    duration: 5, // 5秒视频
+    width: 1200,
+    height: 800
+  });
+  
+  console.log('视频已生成:', videoPath);
+}
+
+async function takeScreenshot() {
+  const htmlCode = `
+    <div style="padding: 20px; background: #f0f0f0;">
+      <h1>截图测试</h1>
+      <p>这是一个截图示例</p>
+    </div>
+  `;
+
+  // 截图
+  const screenshotPath = await browser.htmlToScreenshot({
+    code: htmlCode,
+    width: 800,
+    height: 600,
+    delay: 1000 // 延迟1秒后截图
+  });
+  
+  console.log('截图已保存:', screenshotPath);
+}
+```
+
 ## 许可证
 
 本项目采用 MIT 许可证。查看 [LICENSE](./LICENSE) 文件了解更多详情。

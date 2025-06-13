@@ -15,6 +15,14 @@ interface ConvertOptions {
   sample_ratio?: number;
 }
 
+interface ScreenshotOptions {
+  code: string;
+  width?: number;
+  height?: number;
+  deviceScaleFactor?: number;
+  delay?: number; // 延迟毫秒数，默认500毫秒
+}
+
 export async function htmlToVideo({
   code,
   duration = 2,
@@ -103,4 +111,59 @@ export async function htmlToVideo({
   });
 
   return outputPath;
+}
+
+/**
+ * 截取HTML页面的屏幕截图
+ * @param options 截图选项
+ * @returns 返回图片的临时文件路径
+ */
+export async function htmlToScreenshot({
+  code,
+  width,
+  height,
+  deviceScaleFactor = 1,
+  delay = 500,
+}: ScreenshotOptions): Promise<string> {
+  const apiKey = getGlobalConfig('browser')?.apiKey;
+  if(!apiKey) {
+    throw new Error('请先配置 browser apiKey');
+  }
+
+  // 创建临时目录
+  const tmpDir = createTempDir();
+  
+  const browser = await puppeteer.connect({
+    browserWSEndpoint: `wss://production-sfo.browserless.io/?token=${apiKey}`,
+  });
+
+  const page = await browser.newPage();
+  
+  // 设置HTML内容
+  await page.setContent(code);
+
+  // 等待页面加载完成 - 等待DOM加载完成
+  await page.waitForFunction(() => document.readyState === 'complete');
+
+  // 获取页面实际尺寸
+  let dimensions = { width, height };
+  if(!dimensions.width) {
+    dimensions = await page.evaluate(() => ({
+      width: document.documentElement.scrollWidth,
+      height: document.documentElement.scrollHeight,
+    }));
+  }
+
+  await page.setViewport({ ...dimensions as { width: number, height: number }, deviceScaleFactor });
+
+  // 延迟指定毫秒数
+  await setTimeout(delay);
+
+  // 截图
+  const screenshotPath = path.join(tmpDir, 'screenshot.png');
+  await page.screenshot({ path: screenshotPath as `${string}.png`, fullPage: true });
+
+  await browser.close();
+
+  return screenshotPath;
 }
