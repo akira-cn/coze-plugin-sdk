@@ -1,7 +1,7 @@
 {
   "name": "coze-plugin-sdk",
-  "version": "0.1.0",
-  "description": "实用工具函数库，为Coze插件提供支持",
+  "version": "0.1.1",
+  "description": "Comprehensive utility library for Coze plugins with multimedia processing, browser automation, cloud storage integration, and AI-powered video/audio generation capabilities",
   "main": "dist/index.js",
   "exports": {
     ".": {
@@ -21,11 +21,38 @@
   "keywords": [
     "coze",
     "plugin",
-    "utils",
-    "typescript"
+    "sdk",
+    "typescript",
+    "multimedia",
+    "video-processing",
+    "audio-processing",
+    "ffmpeg",
+    "browser-automation",
+    "puppeteer",
+    "screenshot",
+    "html-to-video",
+    "html-to-image",
+    "aliyun-oss",
+    "cloud-storage",
+    "ai-video",
+    "vidu",
+    "subtitle",
+    "media-conversion",
+    "file-upload",
+    "utility",
+    "tools",
+    "automation"
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akira-cn/coze-plugin-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/akira-cn/coze-plugin-sdk/issues"
+  },
+  "homepage": "https://github.com/akira-cn/coze-plugin-sdk#readme",
   "devDependencies": {
     "@types/ali-oss": "^6.16.11",
     "@types/fluent-ffmpeg": "^2.1.27",

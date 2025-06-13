@@ -15,25 +15,36 @@
   - 多个视频文件合并
 - **第三方 API 集成**：支持与 Vidu API 集成的视频处理功能
 
+## 快速使用
+
+### 准备工作
+
+在 Coze 工作流中进行文件处理后（比如处理了图像、音频、视频等），要将重新文件上传，可以通过 Coze 自身的机制实现，在使用 SDK 前，需要先做一些准备工作。
+
+1. 首先需要解决鉴权问题，这里我们采用服务类应用 JWT 认证。
+
+进入 Coze 开发平台，左侧菜单切换到 API，选择"授权 > OAuth 应用 > 创建新应用”。
+
+![](https://bot.hupox.com/resource/jwk52htao5/1b6addfc14004accbc1f5830b5e91e78.png)
+
+应用创建完成后，选择“下载示例文件”，将文件中的 `private_key` 和 `public_key_id` 保存下来。
+
+2. 切换到“工作空间 > 资源库 > 新资源 > 工作流”，创建一个工作流。
+
+![](https://bot.hupox.com/resource/a7kodzrskr/550671d266e14bbe8b052a8ffc7a41d5.png)
+
+编辑这个工作流，直接连接开始节点和结束节点：
+
+  - 开始节点输入参数为 file，类型是 `File<Default>`
+  - 结束节点输入参数为 url，直接引用开始节点的 file 参数
+
+发布这个工作流，记录它的 workflow_id，这样就完成了准备工作。
+
 ## 安装
 
-使用 npm 安装：
+虽然 `coze-plugin-sdk` 在本地也可以用，但它主要是为 Coze 插件准备的。
 
-```bash
-npm install coze-plugin-sdk
-```
-
-或使用 yarn：
-
-```bash
-yarn add coze-plugin-sdk
-```
-
-或使用 pnpm：
-
-```bash
-pnpm add coze-plugin-sdk
-```
+首先在资源库创建一个插件，
 
 ## 使用示例
 
