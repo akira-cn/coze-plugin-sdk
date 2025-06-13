@@ -42,16 +42,16 @@
 
 ### 安装
 
-虽然 `coze-plugin-sdk` 在本地也可以用，但它主要是为 Coze 插件准备的。
+虽然 `coze-plugin-tools` 在本地也可以用，但它主要是为 Coze 插件准备的。
 
-首先在资源库创建一个插件，点左侧添加依赖包，选择 `coze-plugin-sdk`，等待安装完成。
+首先在资源库创建一个插件，点左侧添加依赖包，选择 `coze-plugin-tools`，等待安装完成。
 
 ### 使用示例
 
 #### 配置管理
 
 ```typescript
-import { setGlobalConfig, getGlobalConfig } from 'coze-plugin-sdk';
+import { setGlobalConfig, getGlobalConfig } from 'coze-plugin-tools';
 
 // 设置全局配置
 setGlobalConfig({
@@ -78,7 +78,7 @@ if (jwt) {
 ### 基础工具函数
 
 ```typescript
-import { sleep, detectMimeType } from 'coze-plugin-utils';
+import { sleep, detectMimeType } from 'coze-plugin-tools';
 
 // 使用 sleep 函数延迟执行
 async function delayedOperation() {
@@ -96,7 +96,7 @@ console.log(`文件类型: ${mimeType}`);
 ### 图像处理
 
 ```typescript
-import { fetchImageAsBase64 } from 'coze-plugin-utils';
+import { fetchImageAsBase64 } from 'coze-plugin-tools';
 
 async function getImage() {
   try {
@@ -113,7 +113,7 @@ async function getImage() {
 ### 音频处理
 
 ```typescript
-import { convertAudio } from 'coze-plugin-utils';
+import { convertAudio } from 'coze-plugin-tools';
 
 async function processAudio() {
   try {
@@ -133,7 +133,7 @@ async function processAudio() {
 ### 视频处理
 
 ```typescript
-import { mergeVideoAndAudio, burnASSSubtitleToVideo, joinVideos } from 'coze-plugin-utils';
+import { mergeVideoAndAudio, burnASSSubtitleToVideo, joinVideos } from 'coze-plugin-tools';
 
 async function processVideos() {
   try {
@@ -167,7 +167,7 @@ async function processVideos() {
 ### 第三方 API 集成
 
 ```typescript
-import { setGlobalConfig, vidu, getViduResult } from 'coze-plugin-utils';
+import { setGlobalConfig, vidu, getViduResult } from 'coze-plugin-tools';
 
 // 设置全局配置
 setGlobalConfig('vidu', {
@@ -295,7 +295,7 @@ interface IWorkflows {
 #### 使用示例
 
 ```typescript
-import { setGlobalConfig, getGlobalConfig } from 'coze-plugin-utils';
+import { setGlobalConfig, getGlobalConfig } from 'coze-plugin-tools';
 
 // 设置整个配置对象
 setGlobalConfig({
@@ -357,7 +357,7 @@ if (jwt) {
 #### 配置 Vidu API
 
 ```typescript
-import { setGlobalConfig } from 'coze-plugin-utils';
+import { setGlobalConfig } from 'coze-plugin-tools';
 
 // 设置 Vidu API 密钥
 setGlobalConfig('vidu', {
@@ -433,7 +433,7 @@ Browser 模块提供基于 Puppeteer 的浏览器自动化功能，支持 HTML �
 #### 配置
 
 ```typescript
-import { setGlobalConfig } from 'coze-plugin-utils';
+import { setGlobalConfig } from 'coze-plugin-tools';
 
 // 设置 Browser API 密钥（Browserless Token）
 setGlobalConfig('browser', {
@@ -463,7 +463,7 @@ setGlobalConfig('browser', {
 #### 使用示例
 
 ```typescript
-import { browser, setGlobalConfig } from 'coze-plugin-utils';
+import { browser, setGlobalConfig } from 'coze-plugin-tools';
 
 // 配置 Browser API Key
 setGlobalConfig('browser', {
