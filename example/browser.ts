@@ -7,7 +7,7 @@ dotenv.config({
 
 setGlobalConfig('jwt', {
   appId: process.env.JWT_APP_IE,
-  userId: 'coze-plugin-tools',
+  userId: 'coze-plugin-utils',
   keyid: process.env.JWT_KEY,
   privateKey: process.env.JWT_SECRET?.replace(/\\n/g, '\n'),
 });

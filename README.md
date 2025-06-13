@@ -42,16 +42,16 @@
 
 ### 安装
 
-虽然 `coze-plugin-tools` 在本地也可以用，但它主要是为 Coze 插件准备的。
+虽然 `coze-plugin-utils` 在本地也可以用，但它主要是为 Coze 插件准备的。
 
-首先在资源库创建一个插件，点左侧添加依赖包，选择 `coze-plugin-tools`，等待安装完成。
+首先在资源库创建一个插件，点左侧添加依赖包，选择 `coze-plugin-utils`，等待安装完成。
 
 ### 使用示例
 
 #### 配置管理
 
 ```typescript
-import { setGlobalConfig, getGlobalConfig } from 'coze-plugin-tools';
+import { setGlobalConfig, getGlobalConfig } from 'coze-plugin-utils';
 
 // 设置全局配置
 setGlobalConfig({
@@ -78,7 +78,7 @@ if (jwt) {
 ### 基础工具函数
 
 ```typescript
-import { sleep, detectMimeType } from 'coze-plugin-tools';
+import { sleep, detectMimeType } from 'coze-plugin-utils';
 
 // 使用 sleep 函数延迟执行
 async function delayedOperation() {
@@ -96,7 +96,7 @@ console.log(`文件类型: ${mimeType}`);
 ### 图像处理
 
 ```typescript
-import { fetchImageAsBase64 } from 'coze-plugin-tools';
+import { fetchImageAsBase64 } from 'coze-plugin-utils';
 
 async function getImage() {
   try {
@@ -113,7 +113,7 @@ async function getImage() {
 ### 音频处理
 
 ```typescript
-import { convertAudio } from 'coze-plugin-tools';
+import { convertAudio } from 'coze-plugin-utils';
 
 async function processAudio() {
   try {
@@ -133,7 +133,7 @@ async function processAudio() {
 ### 视频处理
 
 ```typescript
-import { mergeVideoAndAudio, burnASSSubtitleToVideo, joinVideos } from 'coze-plugin-tools';
+import { mergeVideoAndAudio, burnASSSubtitleToVideo, joinVideos } from 'coze-plugin-utils';
 
 async function processVideos() {
   try {
@@ -167,7 +167,7 @@ async function processVideos() {
 ### 第三方 API 集成
 
 ```typescript
-import { setGlobalConfig, vidu, getViduResult } from 'coze-plugin-tools';
+import { setGlobalConfig, vidu, getViduResult } from 'coze-plugin-utils';
 
 // 设置全局配置
 setGlobalConfig('vidu', {
@@ -295,7 +295,7 @@ interface IWorkflows {
 #### 使用示例
 
 ```typescript
-import { setGlobalConfig, getGlobalConfig } from 'coze-plugin-tools';
+import { setGlobalConfig, getGlobalConfig } from 'coze-plugin-utils';
 
 // 设置整个配置对象
 setGlobalConfig({
@@ -463,7 +463,7 @@ setGlobalConfig('browser', {
 #### 使用示例
 
 ```typescript
-import { browser, setGlobalConfig } from 'coze-plugin-tools';
+import { browser, setGlobalConfig } from 'coze-plugin-utils';
 
 // 配置 Browser API Key
 setGlobalConfig('browser', {

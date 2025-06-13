@@ -1,5 +1,5 @@
 {
-  "name": "coze-plugin-tools",
+  "name": "coze-plugin-utils",
   "version": "0.1.0",
   "description": "Comprehensive utility library for Coze plugins with multimedia processing, browser automation, cloud storage integration, and AI-powered video/audio generation capabilities",
   "main": "dist/index.js",
@@ -47,12 +47,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/akira-cn/coze-plugin-tools.git"
+    "url": "git+https://github.com/akira-cn/coze-plugin-utils.git"
   },
   "bugs": {
-    "url": "https://github.com/akira-cn/coze-plugin-tools/issues"
+    "url": "https://github.com/akira-cn/coze-plugin-utils/issues"
   },
-  "homepage": "https://github.com/akira-cn/coze-plugin-tools#readme",
+  "homepage": "https://github.com/akira-cn/coze-plugin-utils#readme",
   "devDependencies": {
     "@types/ali-oss": "^6.16.11",
     "@types/fluent-ffmpeg": "^2.1.27",

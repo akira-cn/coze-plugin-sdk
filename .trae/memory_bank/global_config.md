@@ -65,7 +65,7 @@ const DEFAULT_CONFIG: IGlobalConfig = {
 
 ```typescript
 // 导入配置函数
-import { setGlobalConfig, getGlobalConfig } from 'coze-plugin-tools';
+import { setGlobalConfig, getGlobalConfig } from 'coze-plugin-utils';
 
 // 设置基本配置
 setGlobalConfig({ baseUrl: 'https://custom-api.coze.cn' });

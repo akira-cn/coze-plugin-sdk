@@ -2,10 +2,10 @@
 
 ## GitHub 仓库
 
-- **仓库地址**：git@github.com:akira-cn/coze-plugin-tools
+- **仓库地址**：git@github.com:akira-cn/coze-plugin-utils
 - **仓库类型**：GitHub
 - **仓库所有者**：akira-cn
-- **仓库名称**：coze-plugin-tools
+- **仓库名称**：coze-plugin-utils
 
 ## 仓库说明
 
