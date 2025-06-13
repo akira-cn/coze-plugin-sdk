@@ -40,15 +40,15 @@
 
 发布这个工作流，记录它的 workflow_id，这样就完成了准备工作。
 
-## 安装
+### 安装
 
 虽然 `coze-plugin-sdk` 在本地也可以用，但它主要是为 Coze 插件准备的。
 
-首先在资源库创建一个插件，
+首先在资源库创建一个插件，点左侧添加依赖包，选择 `coze-plugin-sdk`，等待安装完成。
 
-## 使用示例
+### 使用示例
 
-### 配置管理
+#### 配置管理
 
 ```typescript
 import { setGlobalConfig, getGlobalConfig } from 'coze-plugin-sdk';
