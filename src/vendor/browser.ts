@@ -55,12 +55,14 @@ export async function htmlToVideo({
 
 
   // 获取页面实际尺寸
-  let dimensions = { width, height };
-  if(!dimensions.width) {
-    dimensions = await page.evaluate(() => ({
+  const dimensions = { width, height };
+  if(!dimensions.width || !dimensions.height) {
+    const autoDimensions = await page.evaluate(() => ({
       width: document.documentElement.scrollWidth,
       height: document.documentElement.scrollHeight,
     }));
+    dimensions.width = dimensions.width || autoDimensions.width;
+    dimensions.height = dimensions.height || autoDimensions.height;
   }
 
   await page.setViewport({ ...dimensions as { width: number, height: number }, deviceScaleFactor });
@@ -146,12 +148,14 @@ export async function htmlToScreenshot({
   await page.waitForFunction(() => document.readyState === 'complete');
 
   // 获取页面实际尺寸
-  let dimensions = { width, height };
-  if(!dimensions.width) {
-    dimensions = await page.evaluate(() => ({
+  const dimensions = { width, height };
+  if(!dimensions.width || !dimensions.height) {
+    const autoDimensions = await page.evaluate(() => ({
       width: document.documentElement.scrollWidth,
       height: document.documentElement.scrollHeight,
     }));
+    dimensions.width = dimensions.width || autoDimensions.width;
+    dimensions.height = dimensions.height || autoDimensions.height;
   }
 
   await page.setViewport({ ...dimensions as { width: number, height: number }, deviceScaleFactor });
