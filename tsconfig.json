@@ -5,6 +5,7 @@
     "moduleResolution": "Node",
     "declaration": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -13,6 +14,6 @@
     "sourceMap": true,
     "lib": ["es2020", "dom"]
   },
-  "include": ["src/**/*", "example/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.test.ts", "dist"]
 }
