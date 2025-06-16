@@ -11,7 +11,7 @@ export async function tts({
   speed = 1.0,
   pitch = 1.0,
   volumn = 1.0,
-}: IGenerateVoiceOptions): Promise<{ audio:string; frontend?: any; }> {
+}: IGenerateVoiceOptions): Promise<{ audio:string; duration:number; frontend?: any; }> {
   const azureConfig = getGlobalConfig('azure');
   if (!azureConfig || !azureConfig.speech) {
     throw new Error('Azure Speech Service is not configured');
@@ -76,14 +76,16 @@ export async function tts({
       });
     };
   }
-  const audioData: ArrayBuffer = await new Promise((resolve, reject) => {
+  const audioData: { data: ArrayBuffer, duration:number } = await new Promise((resolve, reject) => {
     synthesizer.speakSsmlAsync(
       xml,
       (result: any) => {
         if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
           // console.log('synthesis finished.');
 
-          resolve(result.audioData);
+          // console.log(result);
+
+          resolve({ data: result.audioData, duration: result.privAudioDuration / 1e7 });
         } else {
           // console.error(result);
           reject(new Error('SynthesizingAudioFailed'));
@@ -98,7 +100,7 @@ export async function tts({
 
   const tmpDir = await createTempDir();
   const audioPath = path.join(tmpDir, 'speech.mp3');
-  await fs.writeFile(audioPath, Buffer.from(audioData));
+  await fs.writeFile(audioPath, Buffer.from(audioData.data));
 
-  return { audio: audioPath, frontend };
+  return { audio: audioPath, duration: audioData.duration, frontend };
 }

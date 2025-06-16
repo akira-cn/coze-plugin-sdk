@@ -98,11 +98,19 @@ export async function uploadFile(tmpFile: string, autoClear = true): Promise<{ u
       body: JSON.stringify(body),
     });
 
-    const { url } = JSON.parse((await ret.json()).data);
+    try {
+      const resData = await ret.json();
+      if(resData.code > 299) {
+        throw new Error(resData.msg);
+      }
+      const { url } = JSON.parse(resData.data);
 
-    return {
-      url,
-    };
+      return {
+        url,
+      };
+    } catch(ex) {
+      throw ex;
+    }
   } finally {
     // 上传完成后删掉整个目录
     if(autoClear) {

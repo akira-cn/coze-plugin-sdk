@@ -29,7 +29,7 @@ async function main() {
     text: '注意看，这个女孩名叫小美。',
   });
   const res = await uploadFile(speech.audio);
-  console.log(res);
+  console.log({...res, duration: speech.duration});
 }
 
 main();
