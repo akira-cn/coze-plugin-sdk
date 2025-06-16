@@ -29,6 +29,13 @@ export interface IViduConfig {
   apiKey: string; // vidu API密钥
 }
 
+export interface IAzureConfig {
+  speech: {
+    key: string;
+    region: string;
+  }
+}
+
 export interface IGlobalConfig {
   baseUrl: string; // 默认值 https://api.coze.cn,
   workflows?: IWorkflows;
@@ -36,4 +43,14 @@ export interface IGlobalConfig {
   aliyun?: IOSSConfig;
   browser?: IBrowserConfig;
   vidu?: IViduConfig;
+  azure?: IAzureConfig;
+}
+
+export interface IGenerateVoiceOptions {
+  voiceName: string;
+  text: string;
+  withFrontend?: boolean;
+  speed?: number,
+  pitch?: number,
+  volumn?: number,
 }

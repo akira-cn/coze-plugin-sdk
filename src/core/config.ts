@@ -3,7 +3,7 @@
  * 提供设置和获取全局配置的功能
  */
 
-import { IGlobalConfig, IJWTConfig, IWorkflows, IOSSConfig, IBrowserConfig, IViduConfig } from '../types/config';
+import { IGlobalConfig, IJWTConfig, IWorkflows, IOSSConfig, IBrowserConfig, IViduConfig, IAzureConfig } from '../types/config';
 
 // 默认配置值
 const DEFAULT_CONFIG: IGlobalConfig = {
@@ -60,13 +60,21 @@ export function setGlobalConfig(config: Partial<IGlobalConfig>): IGlobalConfig;
  *   privateKey: 'your-private-key'
  * });
  * 
+ * // 设置 Azure Speech 配置
+ * setGlobalConfig('azure', {
+ *   speech: {
+ *     key: 'your-azure-speech-key',
+ *     region: 'your-azure-region'
+ *   }
+ * });
+ * 
  * // 设置 baseUrl
  * setGlobalConfig('baseUrl', 'https://custom-api.coze.cn');
  * ```
  */
 export function setGlobalConfig<K extends keyof IGlobalConfig>(
   key: K,
-  config: K extends 'baseUrl' ? string : K extends 'jwt' ? Partial<IJWTConfig> : K extends 'workflows' ? Partial<IWorkflows> : K extends 'aliyun'? Partial<IOSSConfig> : K extends 'browser' ? Partial<IBrowserConfig> : K extends 'vidu' ? Partial<IViduConfig> : never,
+  config: K extends 'baseUrl' ? string : K extends 'jwt' ? Partial<IJWTConfig> : K extends 'workflows' ? Partial<IWorkflows> : K extends 'aliyun'? Partial<IOSSConfig> : K extends 'browser' ? Partial<IBrowserConfig> : K extends 'vidu' ? Partial<IViduConfig> : K extends 'azure' ? Partial<IAzureConfig> : never,
 ): IGlobalConfig;
 
 /**
@@ -74,7 +82,7 @@ export function setGlobalConfig<K extends keyof IGlobalConfig>(
  */
 export function setGlobalConfig<K extends keyof IGlobalConfig>(
   keyOrConfig: K | Partial<IGlobalConfig>,
-  config?: K extends 'baseUrl' ? string : K extends 'jwt' ? Partial<IJWTConfig> : K extends 'workflows' ? Partial<IWorkflows> : K extends 'aliyun'? Partial<IOSSConfig> : K extends 'browser' ? Partial<IBrowserConfig> : K extends 'vidu' ? Partial<IViduConfig> : never,
+  config?: K extends 'baseUrl' ? string : K extends 'jwt' ? Partial<IJWTConfig> : K extends 'workflows' ? Partial<IWorkflows> : K extends 'aliyun'? Partial<IOSSConfig> : K extends 'browser' ? Partial<IBrowserConfig> : K extends 'vidu' ? Partial<IViduConfig> : K extends 'azure' ? Partial<IAzureConfig> : never,
 ): IGlobalConfig {
   // 检查是否是直接传入配置对象的情况
   if (typeof keyOrConfig === 'object' && config === undefined) {
@@ -84,6 +92,14 @@ export function setGlobalConfig<K extends keyof IGlobalConfig>(
     // 深度合并配置
     if (fullConfig.workflows && globalConfig.workflows) {
       fullConfig.workflows = { ...globalConfig.workflows, ...fullConfig.workflows };
+    }
+    
+    if (fullConfig.azure && globalConfig.azure) {
+      fullConfig.azure = {
+        ...globalConfig.azure,
+        ...fullConfig.azure,
+        speech: { ...globalConfig.azure.speech, ...fullConfig.azure.speech },
+      };
     }
     
     // 更新全局配置
@@ -97,7 +113,7 @@ export function setGlobalConfig<K extends keyof IGlobalConfig>(
     
     // 验证 key 是否有效
     if (!Object.prototype.hasOwnProperty.call(DEFAULT_CONFIG, key) 
-      && key !== 'jwt' && key !== 'workflows' && key !== 'aliyun' && key !== 'browser' && key !== 'vidu') {
+      && key !== 'jwt' && key !== 'workflows' && key !== 'aliyun' && key !== 'browser' && key !== 'vidu' && key !== 'azure') {
       throw new Error(`无效的配置键: ${String(key)}`);
     }
 
@@ -122,6 +138,14 @@ export function setGlobalConfig<K extends keyof IGlobalConfig>(
       globalConfig.vidu = { ...globalConfig.vidu, ...(config as IViduConfig) };
     } else if (key === 'vidu' && !globalConfig.vidu) {
       globalConfig.vidu = config as IViduConfig;
+    } else if (key === 'azure' && globalConfig.azure) {
+      globalConfig.azure = { 
+        ...globalConfig.azure, 
+        ...(config as IAzureConfig),
+        speech: { ...globalConfig.azure.speech, ...(config as IAzureConfig).speech },
+      };
+    } else if (key === 'azure' && !globalConfig.azure) {
+      globalConfig.azure = config as IAzureConfig;
     } else {
       (globalConfig as any)[key] = config;
     }
@@ -149,6 +173,13 @@ export function setGlobalConfig<K extends keyof IGlobalConfig>(
  *   // 使用JWT配置进行认证
  * }
  * 
+ * // 获取 Azure 配置
+ * const azureConfig = getGlobalConfig('azure');
+ * if (azureConfig?.speech) {
+ *   // 使用 Azure Speech Service
+ *   console.log(azureConfig.speech.key, azureConfig.speech.region);
+ * }
+ * 
  * // 获取 baseUrl
  * const baseUrl = getGlobalConfig('baseUrl');
  * console.log(baseUrl); // https://api.coze.cn
@@ -159,7 +190,7 @@ export function getGlobalConfig<K extends keyof IGlobalConfig>(key: K): IGlobalC
 export function getGlobalConfig<K extends keyof IGlobalConfig>(key?: K): IGlobalConfig | IGlobalConfig[K] {
   if (key !== undefined) {
     // 验证 key 是否有效
-    if (!Object.prototype.hasOwnProperty.call(DEFAULT_CONFIG, key) && key !== 'jwt' && key !== 'workflows' && key !== 'aliyun' && key !== 'browser' && key !== 'vidu') {
+    if (!Object.prototype.hasOwnProperty.call(DEFAULT_CONFIG, key) && key !== 'jwt' && key !== 'workflows' && key !== 'aliyun' && key !== 'browser' && key !== 'vidu' && key !== 'azure') {
       throw new Error(`无效的配置键: ${String(key)}`);
     }
     

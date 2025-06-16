@@ -22,10 +22,19 @@ interface IWorkflows {
   fileUploader?: string; // 用来上传临时文件
 }
 
+// Azure 服务配置
+interface IAzureConfig {
+  speech: {
+    key: string;    // Azure Speech Service API 密钥
+    region: string; // Azure Speech Service 区域
+  }
+}
+
 interface IGlobalConfig {
   baseUrl: string; // 默认值 https://api.coze.cn,
   workflows?: IWorkflows;
   jwt?: IJWTConfig;
+  azure?: IAzureConfig;
 }
 ```
 
