@@ -1,6 +1,6 @@
 {
   "name": "coze-plugin-utils",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Comprehensive utility library for Coze plugins with multimedia processing, browser automation, cloud storage integration, and AI-powered video/audio generation capabilities",
   "main": "dist/index.js",
   "exports": {

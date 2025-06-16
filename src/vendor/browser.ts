@@ -29,9 +29,9 @@ export async function htmlToVideo({
   width,
   height,
   deviceScaleFactor = 1,
-  sample_ratio = 10,
+  sample_ratio = 1,
 }: ConvertOptions): Promise<string> {
-  sample_ratio = sample_ratio || 10;
+  sample_ratio = sample_ratio || 1;
 
   const apiKey = getGlobalConfig('browser')?.apiKey;
   if(!apiKey) {
@@ -92,6 +92,7 @@ export async function htmlToVideo({
   const framePrefix = path.join(tmpDir, 'frame_');
   for (let i = 0; i < frames.length; i++) {
     const filename = `${framePrefix}${String(i).padStart(4, '0')}.png`;
+    console.log('writing frame', filename, '...');
     fs.writeFileSync(filename, frames[i]);
   }
 
