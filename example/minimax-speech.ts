@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { azure, setGlobalConfig, uploadFile } from '../src';
+import { minimax, setGlobalConfig, uploadFile } from '../src';
 
 dotenv.config({
   path: ['.env.local', '.env'],
@@ -16,17 +16,16 @@ setGlobalConfig('workflows', {
   fileUploader: '7507641509622562835',
 });
 
-setGlobalConfig('azure', {
-  speech: {
-    key: process.env.AZURE_SPEECH_KEY!,
-    region: process.env.AZURE_SPEECH_REGION!,
-  }
+setGlobalConfig('minimax', {
+  apiKey: process.env.MINIMAX_API_KEY,
+  groupId: process.env.MINIMAX_GROUP_ID,
 });
 
 async function main() {
-  const speech = await azure.tts({
-    voiceName: 'en-US-Emma2:DragonHDLatestNeural',
-    text: 'I woke up before the sun today.',
+  const speech = await minimax.tts({
+    model: 'speech-02-hd',
+    voiceName: 'English_Graceful_Lady',
+    text: 'The sky was still holding onto its last dream.',
   });
   const res = await uploadFile(speech.audio);
   console.log({...res, duration: speech.duration});

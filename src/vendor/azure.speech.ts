@@ -9,7 +9,7 @@ export async function tts({
   text,
   withFrontend = false,
   speed = 1.0,
-  pitch = 1.0,
+  pitch = 0,
   volumn = 1.0,
 }: IGenerateVoiceOptions): Promise<{ audio:string; duration:number; frontend?: any; }> {
   const azureConfig = getGlobalConfig('azure');

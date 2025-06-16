@@ -30,11 +30,18 @@ interface IAzureConfig {
   }
 }
 
+// MiniMax 服务配置
+interface IMinimaxConfig {
+  apiKey: string; // MiniMax API 密钥
+  groupId: string; // 组 ID
+}
+
 interface IGlobalConfig {
   baseUrl: string; // 默认值 https://api.coze.cn,
   workflows?: IWorkflows;
   jwt?: IJWTConfig;
   azure?: IAzureConfig;
+  minimax?: IMinimaxConfig;
 }
 ```
 

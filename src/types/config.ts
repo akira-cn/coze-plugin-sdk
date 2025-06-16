@@ -36,6 +36,11 @@ export interface IAzureConfig {
   }
 }
 
+export interface IMinimaxConfig {
+  apiKey: string;
+  groupId: string;
+}
+
 export interface IGlobalConfig {
   baseUrl: string; // 默认值 https://api.coze.cn,
   workflows?: IWorkflows;
@@ -44,6 +49,7 @@ export interface IGlobalConfig {
   browser?: IBrowserConfig;
   vidu?: IViduConfig;
   azure?: IAzureConfig;
+  minimax?: IMinimaxConfig;
 }
 
 export interface IGenerateVoiceOptions {
@@ -53,4 +59,15 @@ export interface IGenerateVoiceOptions {
   speed?: number,
   pitch?: number,
   volumn?: number,
+  emotion?: EVoiceEmotion,
+}
+
+export enum EVoiceEmotion {
+  happy = 'happy',   // "sad", "angry", "fearful", "disgusted", "surprised", "neutral"
+  sad = 'sad',
+  angry = 'angry',
+  fearful = 'fearful',
+  disgusted = 'disgusted',
+  surprised = 'surprised',
+  neutral = 'neutral',
 }

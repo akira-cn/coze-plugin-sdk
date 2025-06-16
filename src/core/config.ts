@@ -3,7 +3,7 @@
  * 提供设置和获取全局配置的功能
  */
 
-import { IGlobalConfig, IJWTConfig, IWorkflows, IOSSConfig, IBrowserConfig, IViduConfig, IAzureConfig } from '../types/config';
+import { IGlobalConfig, IJWTConfig, IWorkflows, IOSSConfig, IBrowserConfig, IViduConfig, IAzureConfig, IMinimaxConfig } from '../types/config';
 
 // 默认配置值
 const DEFAULT_CONFIG: IGlobalConfig = {
@@ -68,13 +68,19 @@ export function setGlobalConfig(config: Partial<IGlobalConfig>): IGlobalConfig;
  *   }
  * });
  * 
+ * // 设置 MiniMax 配置
+ * setGlobalConfig('minimax', {
+ *   apiKey: 'your-minimax-api-key',
+ *   groupId: 'your-group-id'
+ * });
+ * 
  * // 设置 baseUrl
  * setGlobalConfig('baseUrl', 'https://custom-api.coze.cn');
  * ```
  */
 export function setGlobalConfig<K extends keyof IGlobalConfig>(
   key: K,
-  config: K extends 'baseUrl' ? string : K extends 'jwt' ? Partial<IJWTConfig> : K extends 'workflows' ? Partial<IWorkflows> : K extends 'aliyun'? Partial<IOSSConfig> : K extends 'browser' ? Partial<IBrowserConfig> : K extends 'vidu' ? Partial<IViduConfig> : K extends 'azure' ? Partial<IAzureConfig> : never,
+  config: K extends 'baseUrl' ? string : K extends 'jwt' ? Partial<IJWTConfig> : K extends 'workflows' ? Partial<IWorkflows> : K extends 'aliyun'? Partial<IOSSConfig> : K extends 'browser' ? Partial<IBrowserConfig> : K extends 'vidu' ? Partial<IViduConfig> : K extends 'azure' ? Partial<IAzureConfig> : K extends 'minimax' ? Partial<IMinimaxConfig> : never,
 ): IGlobalConfig;
 
 /**
@@ -82,7 +88,7 @@ export function setGlobalConfig<K extends keyof IGlobalConfig>(
  */
 export function setGlobalConfig<K extends keyof IGlobalConfig>(
   keyOrConfig: K | Partial<IGlobalConfig>,
-  config?: K extends 'baseUrl' ? string : K extends 'jwt' ? Partial<IJWTConfig> : K extends 'workflows' ? Partial<IWorkflows> : K extends 'aliyun'? Partial<IOSSConfig> : K extends 'browser' ? Partial<IBrowserConfig> : K extends 'vidu' ? Partial<IViduConfig> : K extends 'azure' ? Partial<IAzureConfig> : never,
+  config?: K extends 'baseUrl' ? string : K extends 'jwt' ? Partial<IJWTConfig> : K extends 'workflows' ? Partial<IWorkflows> : K extends 'aliyun'? Partial<IOSSConfig> : K extends 'browser' ? Partial<IBrowserConfig> : K extends 'vidu' ? Partial<IViduConfig> : K extends 'azure' ? Partial<IAzureConfig> : K extends 'minimax' ? Partial<IMinimaxConfig> : never,
 ): IGlobalConfig {
   // 检查是否是直接传入配置对象的情况
   if (typeof keyOrConfig === 'object' && config === undefined) {
@@ -113,7 +119,7 @@ export function setGlobalConfig<K extends keyof IGlobalConfig>(
     
     // 验证 key 是否有效
     if (!Object.prototype.hasOwnProperty.call(DEFAULT_CONFIG, key) 
-      && key !== 'jwt' && key !== 'workflows' && key !== 'aliyun' && key !== 'browser' && key !== 'vidu' && key !== 'azure') {
+      && key !== 'jwt' && key !== 'workflows' && key !== 'aliyun' && key !== 'browser' && key !== 'vidu' && key !== 'azure' && key !== 'minimax') {
       throw new Error(`无效的配置键: ${String(key)}`);
     }
 
@@ -146,6 +152,10 @@ export function setGlobalConfig<K extends keyof IGlobalConfig>(
       };
     } else if (key === 'azure' && !globalConfig.azure) {
       globalConfig.azure = config as IAzureConfig;
+    } else if (key === 'minimax' && globalConfig.minimax) {
+      globalConfig.minimax = { ...globalConfig.minimax, ...(config as IMinimaxConfig) };
+    } else if (key === 'minimax' && !globalConfig.minimax) {
+      globalConfig.minimax = config as IMinimaxConfig;
     } else {
       (globalConfig as any)[key] = config;
     }
@@ -180,6 +190,13 @@ export function setGlobalConfig<K extends keyof IGlobalConfig>(
  *   console.log(azureConfig.speech.key, azureConfig.speech.region);
  * }
  * 
+ * // 获取 MiniMax 配置
+ * const minimaxConfig = getGlobalConfig('minimax');
+ * if (minimaxConfig?.apiKey) {
+ *   // 使用 MiniMax API
+ *   console.log(minimaxConfig.apiKey, minimaxConfig.groupId);
+ * }
+ * 
  * // 获取 baseUrl
  * const baseUrl = getGlobalConfig('baseUrl');
  * console.log(baseUrl); // https://api.coze.cn
@@ -190,7 +207,7 @@ export function getGlobalConfig<K extends keyof IGlobalConfig>(key: K): IGlobalC
 export function getGlobalConfig<K extends keyof IGlobalConfig>(key?: K): IGlobalConfig | IGlobalConfig[K] {
   if (key !== undefined) {
     // 验证 key 是否有效
-    if (!Object.prototype.hasOwnProperty.call(DEFAULT_CONFIG, key) && key !== 'jwt' && key !== 'workflows' && key !== 'aliyun' && key !== 'browser' && key !== 'vidu' && key !== 'azure') {
+    if (!Object.prototype.hasOwnProperty.call(DEFAULT_CONFIG, key) && key !== 'jwt' && key !== 'workflows' && key !== 'aliyun' && key !== 'browser' && key !== 'vidu' && key !== 'azure' && key !== 'minimax') {
       throw new Error(`无效的配置键: ${String(key)}`);
     }
     
