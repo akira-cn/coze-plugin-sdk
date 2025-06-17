@@ -322,7 +322,7 @@ export async function mergeWithDelayAndStretch(
   const audioDuration = await getDuration(audioPath.file);
   const videoDuration = await getDuration(videoPath.file);
 
-  const rate = audioDuration / videoDuration;
+  const rate = (0.5 + audioDuration) / videoDuration;
   const delayMs = 500;
 
   const videoFilter = rate > 1
