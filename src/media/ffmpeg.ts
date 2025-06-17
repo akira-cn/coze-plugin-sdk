@@ -142,7 +142,7 @@ export async function mergeVideoAndAudio(
 
 interface IAssEvents {
   text: string;
-  effect: string;
+  effect?: string;
   layer?: number;
   start?: string;
   end?: string;
@@ -164,6 +164,7 @@ ScriptType: v4.00+
 PlayResX: 1920
 PlayResY: 1080
 Title: Auto Subtitle
+WrapStyle: 0
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
