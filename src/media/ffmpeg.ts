@@ -312,6 +312,8 @@ async function getDuration(filePath: string): Promise<number> {
 export async function mergeWithDelayAndStretch(
   videoUrl: string,
   audioUrl: string,
+  videoDuration?: number,
+  audioDuration?: number,
 ): Promise<string> {
   // 下载视频和音频
   const [videoPath, audioPath] = await downloadFiles([
@@ -319,8 +321,8 @@ export async function mergeWithDelayAndStretch(
     { url: audioUrl, filename: `audio.mp3` },
   ]);
 
-  const audioDuration = await getDuration(audioPath.file);
-  const videoDuration = await getDuration(videoPath.file);
+  videoDuration = videoDuration || await getDuration(videoPath.file);
+  audioDuration = audioDuration || await getDuration(audioPath.file);
 
   const rate = (0.5 + audioDuration) / videoDuration;
   const delayMs = 500;
