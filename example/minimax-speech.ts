@@ -26,6 +26,9 @@ async function main() {
     model: 'speech-02-hd',
     voiceName: 'English_Graceful_Lady',
     text: 'The sky was still holding onto its last dream.',
+    speed: undefined,
+    pitch: undefined,
+    volumn: undefined,
   });
   const res = await uploadFile(speech.audio);
   console.log({...res, duration: speech.duration});

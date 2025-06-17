@@ -298,3 +298,59 @@ export async function joinVideos(
   
   return outputFile;
 }
+
+async function getDuration(filePath: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(filePath, (err, metadata) => {
+      if (err) return reject(err);
+      const duration = metadata.format.duration;
+      resolve(duration || 0);
+    });
+  });
+}
+
+export async function mergeWithDelayAndStretch(
+  videoUrl: string,
+  audioUrl: string,
+): Promise<string> {
+  // 下载视频和音频
+  const [videoPath, audioPath] = await downloadFiles([
+    { url: videoUrl, filename: 'video.mp4' },
+    { url: audioUrl, filename: `audio.mp3` },
+  ]);
+
+  const audioDuration = await getDuration(audioPath.file);
+  const videoDuration = await getDuration(videoPath.file);
+
+  const rate = audioDuration / videoDuration;
+  const delayMs = 500;
+
+  const videoFilter = rate > 1
+    ? `[0:v]setpts=${rate}*PTS[v]`
+    : `[0:v]copy[v]`;
+
+  const audioFilter = `[1:a]adelay=${delayMs}|${delayMs}[aud]`;
+
+  const filterComplex = `${videoFilter};${audioFilter}`;
+
+  const outputPath = videoPath.createOutput('output.mp4');
+
+  await new Promise<void>((resolve, reject) => {
+    ffmpeg()
+      .input(videoPath.file)
+      .input(audioPath.file)
+      .complexFilter(filterComplex)
+      .outputOptions(['-map [v]', '-map [aud]', '-c:v libx264', '-c:a aac'])
+      .on('end', () => {
+        console.log('✅ 合成完成');
+        resolve();
+      })
+      .on('error', (err) => {
+        console.error('❌ 出错了:', err.message);
+        reject(new Error(`视频合并失败: ${err.message}`));
+      })
+      .save(outputPath);
+  });
+
+  return outputPath;
+}
