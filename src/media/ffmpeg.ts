@@ -345,7 +345,11 @@ export async function mergeWithDelayAndStretch(
     ? `[0:v]setpts=${rate}*PTS[v]`
     : `[0:v]copy[v]`;
 
-  const audioFilter = `[1:a]adelay=${delayMs}|${delayMs},apad[aud]`;
+  // 检查是否需要补齐音频尾帧
+  const needPadding = videoDuration > (audioDuration + 0.5);
+  const audioFilter = needPadding 
+    ? `[1:a]adelay=${delayMs}|${delayMs},apad=whole_dur=${videoDuration}[aud]`
+    : `[1:a]adelay=${delayMs}|${delayMs}[aud]`;
 
   let filterComplex = `${videoFilter};${audioFilter}`;
 
@@ -373,7 +377,7 @@ export async function mergeWithDelayAndStretch(
       .input(videoPath.file)
       .input(audioPath.file)
       .complexFilter(filterComplex)
-      .outputOptions(subtitle ? ['-map [vout]', '-map [aud]', '-c:v libx264', '-c:a aac', '-shortest'] : ['-map [v]', '-map [aud]', '-c:v libx264', '-c:a aac', '-shortest'])
+      .outputOptions(subtitle ? ['-map [vout]', '-map [aud]', '-c:v libx264', '-c:a aac'] : ['-map [v]', '-map [aud]', '-c:v libx264', '-c:a aac'])
       .on('start', (commandLine) => {
         console.log('[FFmpeg] 开始执行命令:', commandLine);
       })

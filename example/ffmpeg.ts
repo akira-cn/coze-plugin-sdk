@@ -40,8 +40,8 @@ async function main(): Promise<void> {
   // 示例4: 合并多个视频
   // 使用本地资源文件进行测试
   const videoUrls = [
-      "https://lf3-bot-platform-tos-sign.coze.cn/bot-studio-bot-platform/bot_files/578803847402115/video/mp4/7517284513933230134/output.mp4?lk3s=50ccb0c5&x-expires=1750859176&x-signature=8en%2FnOvASFSmSMaTPKWNhPO9nuc%3D",
-      "https://lf3-bot-platform-tos-sign.coze.cn/bot-studio-bot-platform/bot_files/578803847402115/video/mp4/7517284513933230134/output.mp4?lk3s=50ccb0c5&x-expires=1750859176&x-signature=8en%2FnOvASFSmSMaTPKWNhPO9nuc%3D",
+      "https://lf6-bot-platform-tos-sign.coze.cn/bot-studio-bot-platform/bot_files/578803847402115/video/mp4/7517292809146073100/output.mp4?lk3s=50ccb0c5&x-expires=1750861073&x-signature=gXDnFCLhWmeQnt4bSEk6xyr2YMU%3D",
+      "https://lf6-bot-platform-tos-sign.coze.cn/bot-studio-bot-platform/bot_files/578803847402115/video/mp4/7517292809146073100/output.mp4?lk3s=50ccb0c5&x-expires=1750861073&x-signature=gXDnFCLhWmeQnt4bSEk6xyr2YMU%3D",
     ];
   
   console.log('开始合并视频...');
