@@ -1,11 +1,14 @@
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
-import { promises as fs } from 'node:fs';
+import { promises as fs, existsSync } from 'node:fs';
 import path from 'node:path';
 import { detectMimeType } from './utils';
 import { downloadFile, downloadFiles } from '../core';
 
-ffmpeg.setFfmpegPath(ffmpegPath as string);
+if(ffmpegPath && existsSync(ffmpegPath)) {
+  ffmpeg.setFfmpegPath(ffmpegPath as string);
+}
+
 
 /**
  * 将音频文件从一种格式转换为另一种格式
@@ -172,7 +175,7 @@ Style: Default,Source Han Sans CN,60,&H00FFFFFF,&H000000FF,&H64000000,&H64000000
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-${contents.map((c) => `Dialogue: ${c.layer || 0},${c.start || '0:00:00.00'},${c.end || '0:00:10.00'},${c.style || 'Default'},${c.name || ''},${c.marginL || 0},${c.marginR || 0},${c.marginV || 0},,${c.effect}${c.text}`).join('\n')}
+${contents.map((c) => `Dialogue: ${c.layer || 0},${c.start || '0:00:00.00'},${c.end || '0:00:10.00'},${c.style || 'Default'},${c.name || ''},${c.marginL || 0},${c.marginR || 0},${c.marginV || 0},,${c.effect||''}${c.text}`).join('\n')}
 `;
 
   return assContent;
