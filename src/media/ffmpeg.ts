@@ -313,6 +313,15 @@ async function getDuration(filePath: string): Promise<number> {
   });
 }
 
+function replaceChineseWithFontTag(text: string): string {
+  // 匹配：中文、全角标点，中文间可以有空格也可以没有
+  const pattern = /([\u4e00-\u9fff\u3000-\u303F\uff00-\uffef](?:\s*[\u4e00-\u9fff\u3000-\u303F\uff00-\uffef])*)/g;
+
+  return text.replace(pattern, (match) => {
+    return `{\\fnSource Han Sans CN}${match}{\\fnOpen Sans}`;
+  });
+}
+
 export async function mergeWithDelayAndStretch(
   videoUrl: string,
   audioUrl: string,
@@ -336,7 +345,7 @@ export async function mergeWithDelayAndStretch(
     ? `[0:v]setpts=${rate}*PTS[v]`
     : `[0:v]copy[v]`;
 
-  const audioFilter = `[1:a]adelay=${delayMs}|${delayMs}[aud]`;
+  const audioFilter = `[1:a]adelay=${delayMs}|${delayMs},apad[aud]`;
 
   let filterComplex = `${videoFilter};${audioFilter}`;
 
@@ -346,8 +355,8 @@ export async function mergeWithDelayAndStretch(
     const assFile = videoPath.createOutput('temp_subtitle.ass');
     const assText = generateASS([
       {
-        text: subtitle,
-        effect: '{\\an2}',
+        text: replaceChineseWithFontTag(subtitle),
+        effect: '{\\an2\\fnOpen Sans}',
         start: '0:00:00.50',
         marginV: 100,
         marginL: 60,
@@ -364,7 +373,10 @@ export async function mergeWithDelayAndStretch(
       .input(videoPath.file)
       .input(audioPath.file)
       .complexFilter(filterComplex)
-      .outputOptions(subtitle ? ['-map [vout]', '-map [aud]', '-c:v libx264', '-c:a aac'] : ['-map [v]', '-map [aud]', '-c:v libx264', '-c:a aac'])
+      .outputOptions(subtitle ? ['-map [vout]', '-map [aud]', '-c:v libx264', '-c:a aac', '-shortest'] : ['-map [v]', '-map [aud]', '-c:v libx264', '-c:a aac', '-shortest'])
+      .on('start', (commandLine) => {
+        console.log('[FFmpeg] 开始执行命令:', commandLine);
+      })
       .on('end', () => {
         console.log('✅ 合成完成');
         resolve();

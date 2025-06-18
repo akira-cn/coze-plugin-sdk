@@ -36,51 +36,38 @@ async function main(): Promise<void> {
   // }]);
   // const res1 = await uploadFile(output2);
   // console.log(res1);
-
-  // 示例3: 添加字幕
-  // const subTitles = [
-  // {
-  //   'text': 'It starts where the sun meets the soil—coffee cherries ripen on sun-drenched branches.',
-  //   'effect': '{\\an2}',
-  //   'start': '0:00:00.50',
-  //   marginV: 100,
-  // }];
-  // const output2 = await burnASSSubtitleToVideo('https://prod-ss-vidu.s3.cn-northwest-1.amazonaws.com.cn/infer/tasks/25/0617/12/832542276826697728/creation-01/video.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIARRHG6JR7EMNHVUWT%2F20250617%2Fcn-northwest-1%2Fs3%2Faws4_request&X-Amz-Date=20250617T125810Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&response-cache-control=max-age%3D86400&response-content-disposition=attachment%3Bfilename%3Dvidu-general-8-2025-06-17T12%253A58%253A09Z.mp4&x-id=GetObject&X-Amz-Signature=15f850538c1faff17e8729ee29d1ff1acc0ffa79c6276569d78d135204653b54', subTitles);
-  // const res2 = await uploadFile(output2);
-  // console.log(res2);
   
   // 示例4: 合并多个视频
   // 使用本地资源文件进行测试
-  // const videoUrls = [
-  //   `https://bot.hupox.com/resource/46ame3dikp/32db5a28c13a441794354dfc0ab44153.mp4`,
-  //   `https://bot.hupox.com/resource/88rjzfot26/d594f4829a90484d80ece73faee7e764.mp4`,
-  //   `https://bot.hupox.com/resource/vczgzcbtev/a04944fcc41a41a999680696664b6754.mp4`,
-  // ];
+  const videoUrls = [
+      "https://lf3-bot-platform-tos-sign.coze.cn/bot-studio-bot-platform/bot_files/578803847402115/video/mp4/7517284513933230134/output.mp4?lk3s=50ccb0c5&x-expires=1750859176&x-signature=8en%2FnOvASFSmSMaTPKWNhPO9nuc%3D",
+      "https://lf3-bot-platform-tos-sign.coze.cn/bot-studio-bot-platform/bot_files/578803847402115/video/mp4/7517284513933230134/output.mp4?lk3s=50ccb0c5&x-expires=1750859176&x-signature=8en%2FnOvASFSmSMaTPKWNhPO9nuc%3D",
+    ];
   
-  // console.log('开始合并视频...');
-  // try {
-  //   const outputPath = await joinVideos(videoUrls);
-  //   console.log('视频合并完成，输出路径:', outputPath);
+  console.log('开始合并视频...');
+  try {
+    const outputPath = await joinVideos(videoUrls);
+    console.log('视频合并完成，输出路径:', outputPath);
     
-  //   // 上传合并后的视频
-  //   const uploadResult = await uploadFile(outputPath);
-  //   console.log('视频上传完成，URL:', uploadResult.url);
-  // } catch (error) {
-  //   console.error('视频合并失败:', error);
-  // }
+    // 上传合并后的视频
+    const uploadResult = await uploadFile(outputPath);
+    console.log('视频上传完成，URL:', uploadResult.url);
+  } catch (error) {
+    console.error('视频合并失败:', error);
+  }
 
-  const config = {
-    "audio_duration": 4.14,
-    "audio_url": "https://lf9-bot-platform-tos-sign.coze.cn/bot-studio-bot-platform/bot_files/117023652459296/audio/mpeg/7517187145455632384/speech.mp3?lk3s=50ccb0c5&x-expires=1750836407&x-signature=llBVIgUgBEFqdOi86E%2BpQQqUoOE%3D",
-    "video_duration": 5,
-    "video_url": "https://bot.hupox.com/resource/kg6j3ksw0u/2089f81487994116a836d03021f082c0.mp4",
-    "subtitle_text": "Have you ever found yourself watching a storm, waiting?"
-  };
+  // const config = {
+  //   "audio_duration": 8.1,
+  //   "audio_url": "https://lf3-bot-platform-tos-sign.coze.cn/bot-studio-bot-platform/bot_files/117023652459296/audio/mpeg/7517187105270300672/speech.mp3?lk3s=50ccb0c5&x-expires=1750836406&x-signature=tMqkhnbW67xnciTu%2F%2F5aAP4pRHo%3D",
+  //   "subtitle_text": "Light’s journey to your eyes is practically instantaneous. Sound’s journey… is a very different story.",
+  //   "video_duration": 10,
+  //   "video_url": ""
+  // };
 
-  const output1 = await mergeWithDelayAndStretch(config.video_url, config.audio_url, config.video_duration, config.audio_duration, config.subtitle_text);
+  // const output1 = await mergeWithDelayAndStretch(config.video_url, config.audio_url, config.video_duration, config.audio_duration, config.subtitle_text);
 
-  const res1 = await uploadFile(output1);
-  console.log(res1);
+  // const res1 = await uploadFile(output1);
+  // console.log(res1);
 }
  
 main();
