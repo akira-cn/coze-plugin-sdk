@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { convertAudio, mergeVideoAndAudio, burnASSSubtitleToVideo, joinVideos, setGlobalConfig, uploadFile } from '../src';
+import { convertAudio, mergeVideoAndAudio, burnASSSubtitleToVideo, joinVideos, setGlobalConfig, uploadFile, mergeWithDelayAndStretch } from '../src';
 
 dotenv.config({
   path: ['.env.local', '.env'],
@@ -24,18 +24,18 @@ async function main(): Promise<void> {
   // console.log(res);
 
   // 示例2: 合并视频和音频
-  const audio = 'https://bot.hupox.com/resource/ol6sc4mylf/09e99b75f61f4dfb83893560d6d7d2c8.wav';
-  const video = 'https://bot.hupox.com/resource/hiq0a23lb6/bdbfe596586e4c8c95894f270d6f7553.mp4';
-  const output1 = await mergeVideoAndAudio(video, audio);
+  // const audio = 'https://bot.hupox.com/resource/ol6sc4mylf/09e99b75f61f4dfb83893560d6d7d2c8.wav';
+  // const video = 'https://bot.hupox.com/resource/hiq0a23lb6/bdbfe596586e4c8c95894f270d6f7553.mp4';
+  // const output1 = await mergeVideoAndAudio(video, audio);
 
-  const output2 = await burnASSSubtitleToVideo(output1, [{
-    text: 'abc def',
-    effect: '{\\an2}',
-    start: '0:00:00.50',
-    marginV: 100,
-  }]);
-  const res1 = await uploadFile(output2);
-  console.log(res1);
+  // const output2 = await burnASSSubtitleToVideo(output1, [{
+  //   text: 'abc def',
+  //   effect: '{\\an2}',
+  //   start: '0:00:00.50',
+  //   marginV: 100,
+  // }]);
+  // const res1 = await uploadFile(output2);
+  // console.log(res1);
 
   // 示例3: 添加字幕
   // const subTitles = [
@@ -68,6 +68,19 @@ async function main(): Promise<void> {
   // } catch (error) {
   //   console.error('视频合并失败:', error);
   // }
+
+  const config = {
+    "audio_duration": 4.14,
+    "audio_url": "https://lf9-bot-platform-tos-sign.coze.cn/bot-studio-bot-platform/bot_files/117023652459296/audio/mpeg/7517187145455632384/speech.mp3?lk3s=50ccb0c5&x-expires=1750836407&x-signature=llBVIgUgBEFqdOi86E%2BpQQqUoOE%3D",
+    "video_duration": 5,
+    "video_url": "https://bot.hupox.com/resource/kg6j3ksw0u/2089f81487994116a836d03021f082c0.mp4",
+    "subtitle_text": "Have you ever found yourself watching a storm, waiting?"
+  };
+
+  const output1 = await mergeWithDelayAndStretch(config.video_url, config.audio_url, config.video_duration, config.audio_duration, config.subtitle_text);
+
+  const res1 = await uploadFile(output1);
+  console.log(res1);
 }
  
 main();

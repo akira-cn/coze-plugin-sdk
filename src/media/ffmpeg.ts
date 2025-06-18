@@ -318,6 +318,7 @@ export async function mergeWithDelayAndStretch(
   audioUrl: string,
   videoDuration?: number,
   audioDuration?: number,
+  subtitle?: string,
 ): Promise<string> {
   // 下载视频和音频
   const [videoPath, audioPath] = await downloadFiles([
@@ -337,16 +338,33 @@ export async function mergeWithDelayAndStretch(
 
   const audioFilter = `[1:a]adelay=${delayMs}|${delayMs}[aud]`;
 
-  const filterComplex = `${videoFilter};${audioFilter}`;
+  let filterComplex = `${videoFilter};${audioFilter}`;
 
   const outputPath = videoPath.createOutput('output.mp4');
+
+  if(subtitle) {
+    const assFile = videoPath.createOutput('temp_subtitle.ass');
+    const assText = generateASS([
+      {
+        text: subtitle,
+        effect: '{\\an2}',
+        start: '0:00:00.50',
+        marginV: 100,
+        marginL: 60,
+        marginR: 60,
+      },
+    ]);
+    await fs.writeFile(assFile, assText, 'utf-8');
+    const fontsdir = path.resolve(__dirname, '..', '..', 'fonts');
+    filterComplex = `${filterComplex};[v]ass=${assFile}:fontsdir=${fontsdir}[vout]`;
+  }
 
   await new Promise<void>((resolve, reject) => {
     ffmpeg()
       .input(videoPath.file)
       .input(audioPath.file)
       .complexFilter(filterComplex)
-      .outputOptions(['-map [v]', '-map [aud]', '-c:v libx264', '-c:a aac'])
+      .outputOptions(subtitle ? ['-map [vout]', '-map [aud]', '-c:v libx264', '-c:a aac'] : ['-map [v]', '-map [aud]', '-c:v libx264', '-c:a aac'])
       .on('end', () => {
         console.log('✅ 合成完成');
         resolve();
