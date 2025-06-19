@@ -362,6 +362,7 @@ export async function mergeWithDelayAndStretch(
         text: replaceChineseWithFontTag(subtitle),
         effect: '{\\an2\\fnOpen Sans}',
         start: '0:00:00.50',
+        end: '0:00:20.00',
         marginV: 100,
         marginL: 60,
         marginR: 60,
