@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
-import { convertAudio, mergeVideoAndAudio, burnASSSubtitleToVideo, joinVideos, setGlobalConfig, uploadFile, mergeWithDelayAndStretch } from '../src';
+import path from 'path';
+import { convertAudio, mergeVideoAndAudio, burnASSSubtitleToVideo, joinVideos, setGlobalConfig, uploadFile, mergeWithDelayAndStretch, createKenBurnsVideoFromImages } from '../src';
 
 dotenv.config({
   path: ['.env.local', '.env'],
@@ -39,22 +40,22 @@ async function main(): Promise<void> {
   
   // 示例4: 合并多个视频
   // 使用本地资源文件进行测试
-  const videoUrls = [
-      "https://lf6-bot-platform-tos-sign.coze.cn/bot-studio-bot-platform/bot_files/578803847402115/video/mp4/7517292809146073100/output.mp4?lk3s=50ccb0c5&x-expires=1750861073&x-signature=gXDnFCLhWmeQnt4bSEk6xyr2YMU%3D",
-      "https://lf6-bot-platform-tos-sign.coze.cn/bot-studio-bot-platform/bot_files/578803847402115/video/mp4/7517292809146073100/output.mp4?lk3s=50ccb0c5&x-expires=1750861073&x-signature=gXDnFCLhWmeQnt4bSEk6xyr2YMU%3D",
-    ];
+  // const videoUrls = [
+  //     "https://lf6-bot-platform-tos-sign.coze.cn/bot-studio-bot-platform/bot_files/578803847402115/video/mp4/7517292809146073100/output.mp4?lk3s=50ccb0c5&x-expires=1750861073&x-signature=gXDnFCLhWmeQnt4bSEk6xyr2YMU%3D",
+  //     "https://lf6-bot-platform-tos-sign.coze.cn/bot-studio-bot-platform/bot_files/578803847402115/video/mp4/7517292809146073100/output.mp4?lk3s=50ccb0c5&x-expires=1750861073&x-signature=gXDnFCLhWmeQnt4bSEk6xyr2YMU%3D",
+  //   ];
   
-  console.log('开始合并视频...');
-  try {
-    const outputPath = await joinVideos(videoUrls);
-    console.log('视频合并完成，输出路径:', outputPath);
+  // console.log('开始合并视频...');
+  // try {
+  //   const outputPath = await joinVideos(videoUrls);
+  //   console.log('视频合并完成，输出路径:', outputPath);
     
-    // 上传合并后的视频
-    const uploadResult = await uploadFile(outputPath);
-    console.log('视频上传完成，URL:', uploadResult.url);
-  } catch (error) {
-    console.error('视频合并失败:', error);
-  }
+  //   // 上传合并后的视频
+  //   const uploadResult = await uploadFile(outputPath);
+  //   console.log('视频上传完成，URL:', uploadResult.url);
+  // } catch (error) {
+  //   console.error('视频合并失败:', error);
+  // }
 
   // const config = {
   //   "audio_duration": 8.1,
@@ -68,6 +69,57 @@ async function main(): Promise<void> {
 
   // const res1 = await uploadFile(output1);
   // console.log(res1);
+
+  // 示例5: Ken Burns 效果视频生成（带字幕）
+  // 使用本地测试图片生成带有 Ken Burns 效果和字幕的视频
+  console.log('开始生成 Ken Burns 效果视频（带字幕）...');
+  try {
+    const kenBurnsOutput = await createKenBurnsVideoFromImages({
+      scenes: [
+        {
+          url: `https://bot.hupox.com/resource/yc6u6d86z0/2103cbddd4514748934a6db6e7b99ad0.jpeg.jpg`,
+          audio: 'https://bot.hupox.com/resource/l6083trqxi/de292ce5495d4519bbf30696b2e1adec.mp3.mpga',
+          audioDelay: 0.5, // 音频延迟0.5秒播放
+          duration: 9, // 每张图片显示3秒
+          subtitle: '第一个场景：美丽的风景',
+          subtitlePosition: 'bottom',
+          subtitleDelay: 0.5, // 延迟0.5秒显示字幕
+          subtitleFontSize: 48, // 字体大小48
+        },
+        {
+          url: `https://bot.hupox.com/resource/gny5nsft0j/7044a14fa85348d192375bbad147f05f.jpeg.jpg`,
+          audio: 'https://bot.hupox.com/resource/l6083trqxi/de292ce5495d4519bbf30696b2e1adec.mp3.mpga',
+          audioDelay: 1.0, // 音频延迟1.0秒播放
+          duration: 10, // 第二张图片显示4秒
+          subtitle: '第二个场景：城市夜景',
+          subtitlePosition: 'middle',
+          subtitleDelay: 1.0, // 延迟1秒显示字幕
+          subtitleFontSize: 64, // 字体大小64
+        },
+        {
+          url: `https://bot.hupox.com/resource/arcxdht3wn/82fc53d1cf994db89323810749d5055e.jpeg.jpg`,
+          audio: 'https://bot.hupox.com/resource/l6083trqxi/de292ce5495d4519bbf30696b2e1adec.mp3.mpga',
+          audioDelay: 0.3, // 音频延迟0.3秒播放
+          duration: 12, // 第三张图片显示3秒
+          subtitle: '第三个场景：自然风光',
+          subtitlePosition: 'top',
+          subtitleDelay: 0, // 立即显示字幕
+          subtitleFontSize: 56, // 字体大小56
+        },
+      ],
+      resolution: '1920x1080', // 高清分辨率
+      fadeDuration: .3, // 1.5秒的淡入淡出效果
+      fps: 30, // 30帧每秒
+    });
+    
+    console.log('Ken Burns 视频生成完成，输出路径:', kenBurnsOutput);
+    
+    // 上传生成的视频
+    const kenBurnsUploadResult = await uploadFile(kenBurnsOutput);
+    console.log('Ken Burns 视频上传完成，URL:', kenBurnsUploadResult.url);
+  } catch (error) {
+    console.error('Ken Burns 视频生成失败:', error);
+  }
 }
  
 main();

@@ -71,3 +71,21 @@ export enum EVoiceEmotion {
   surprised = 'surprised',
   neutral = 'neutral',
 }
+
+export interface SceneItem {
+  url: string;
+  duration: number; // 每张图展示时间（秒）
+  subtitle?: string; // 可选字幕文本
+  subtitlePosition?: 'top' | 'middle' | 'bottom'; // 字幕位置
+  subtitleDelay?: number; // 字幕延迟显示时间（秒）
+  subtitleFontSize?: number; // 字幕字体大小，默认60
+  audio?: string; // 可选音频URL
+  audioDelay?: number; // 音频延迟播放时间（秒），默认0.5
+}
+
+export interface KenBurnsOptions {
+  scenes: SceneItem[];
+  resolution?: string;   // 默认 1280x720
+  fadeDuration?: number; // 默认 1 秒
+  fps?: number;          // 默认 25
+}
