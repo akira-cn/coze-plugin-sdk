@@ -409,10 +409,10 @@ function generateKenBurnsMotion(index: number, enableShake: boolean = false, sha
   // 简单的交替模式：奇数图片放大，偶数图片缩小
   const isZoomIn = index % 2 === 0;
   
-  let startX = 0.5;
-  let startY = 0.5;
-  let endX = 0.5;
-  let endY = 0.5;
+  let startX = 0;
+  let startY = 0;
+  let endX = 0;
+  let endY = 0;
   
   // 如果启用抖动，添加轻微的随机偏移
   if (enableShake) {
@@ -625,6 +625,7 @@ export async function createKenBurnsVideoFromImages({
         // 如果提供了卡拉OK字幕参数，生成卡拉OK字幕
         assFile = imageFiles[0].createOutput('karaoke_subtitle.ass');
         assText = generateAssSubtitleForSong(subtitles.title, subtitles.author, subtitles.sentences);
+        // console.log(assText);
       } else {
         // 使用原有的字幕生成逻辑
         assFile = imageFiles[0].createOutput('temp_subtitle.ass');
@@ -746,27 +747,21 @@ export function generateAssSubtitleForSong(
       events.push(`Dialogue: 0,${startTimeFormatted},${endTimeFormatted},Default,,0,0,0,,{\\an2}${part.text}`);
       
       // 处理逐字卡拉OK效果
-      part.words.forEach((word, wordIndex) => {
-        if (word.text.trim()) { // 忽略空白词
-          const wordStartTime = formatAssTime(word.start_time);
-          const wordEndTime = formatAssTime(word.end_time);
-          
-          // 计算这个词在整句中的位置
-          const beforeText = part.words.slice(0, wordIndex)
-            .map((w) => w.text)
-            .join('');
-          const currentText = word.text;
-          const afterText = part.words.slice(wordIndex + 1)
-            .map((w) => w.text)
-            .join('');
-          
-          // 构建卡拉OK效果文本
-          // 前面的文字已高亮，当前文字正在高亮，后面的文字未高亮
-          const karaokeText = `{\\an8}{\\k0}${beforeText}{\\k${Math.round((word.end_time - word.start_time) / 10)}}${currentText}{\\k0}${afterText}`;
-          
-          events.push(`Dialogue: 0,${wordStartTime},${wordEndTime},KaraokeHighlight,,0,0,0,,${karaokeText}`);
+      // 为整句创建一个卡拉OK行，包含所有单词的时间信息
+      let karaokeText = '{\\an8}';
+      part.words.forEach((word) => {
+        if (word.text.trim()) {
+          // 计算每个词的持续时间（以厘秒为单位）
+          const duration = Math.round((word.end_time - word.start_time) / 10);
+          karaokeText += `{\\k${duration}}${word.text}`;
+        } else {
+          // 对于空白字符，不添加时间标记
+          karaokeText += word.text;
         }
       });
+      
+      // 添加卡拉OK效果行（显示在顶部）
+      events.push(`Dialogue: 0,${startTimeFormatted},${endTimeFormatted},KaraokeHighlight,,0,0,0,,${karaokeText}`);
     }
   });
   
