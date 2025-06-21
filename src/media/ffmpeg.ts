@@ -5,7 +5,7 @@ import path from 'node:path';
 import sizeOf from 'image-size';
 import { downloadFile, downloadFiles, getTempPath } from '../core';
 import { detectMimeType } from './utils';
-import { KenBurnsOptions } from '../types/config';
+import { IAssSongPart, KenBurnsOptions } from '../types/config';
 
 if(ffmpegStatic && existsSync(ffmpegStatic)) {
   ffmpeg.setFfmpegPath(ffmpegStatic as string);
@@ -401,20 +401,48 @@ export async function mergeWithDelayAndStretch(
 /**
  * 生成简单的 Ken Burns 运动参数
  * @param index 图片索引，用于交替缩放方向
+ * @param enableShake 是否启用抖动效果
+ * @param shakeIntensity 抖动强度
  * @returns 运动参数对象
  */
-function generateKenBurnsMotion(index: number) {
+function generateKenBurnsMotion(index: number, enableShake: boolean = false, shakeIntensity: number = 0.02) {
   // 简单的交替模式：奇数图片放大，偶数图片缩小
-  // 统一使用中心位置，避免复杂的平移
   const isZoomIn = index % 2 === 0;
+  
+  let startX = 0.5;
+  let startY = 0.5;
+  let endX = 0.5;
+  let endY = 0.5;
+  
+  // 如果启用抖动，添加轻微的随机偏移
+  if (enableShake) {
+    // 使用图片索引作为种子，确保每次生成相同的"随机"值
+    const seed = index * 12345;
+    const random1 = ((seed * 9301 + 49297) % 233280) / 233280;
+    const random2 = (((seed + 1) * 9301 + 49297) % 233280) / 233280;
+    const random3 = (((seed + 2) * 9301 + 49297) % 233280) / 233280;
+    const random4 = (((seed + 3) * 9301 + 49297) % 233280) / 233280;
+    
+    // 减小抖动范围，使用更小的偏移量
+    startX = 0.5 + (random1 - 0.5) * shakeIntensity;
+    startY = 0.5 + (random2 - 0.5) * shakeIntensity;
+    endX = 0.5 + (random3 - 0.5) * shakeIntensity;
+    endY = 0.5 + (random4 - 0.5) * shakeIntensity;
+    
+    // 确保坐标在合理范围内
+    startX = Math.max(0.1, Math.min(0.9, startX));
+    startY = Math.max(0.1, Math.min(0.9, startY));
+    endX = Math.max(0.1, Math.min(0.9, endX));
+    endY = Math.max(0.1, Math.min(0.9, endY));
+  }
   
   return {
     startZoom: isZoomIn ? 1.0 : 1.5,
     endZoom: isZoomIn ? 1.5 : 1.0,
-    startX: 0.5, // 始终居中
-    startY: 0.5,
-    endX: 0.5,
-    endY: 0.5,
+    startX,
+    startY,
+    endX,
+    endY,
   };
 }
 
@@ -435,6 +463,9 @@ export async function createKenBurnsVideoFromImages({
   resolution,
   fadeDuration = 0.2,
   fps = 25,
+  enableShake = false,
+  shakeIntensity = 0.02,
+  subtitles,
 }: KenBurnsOptions): Promise<string> {
   return new Promise(async (resolve, reject) => {
     const inputs = ffmpeg();
@@ -507,13 +538,13 @@ export async function createKenBurnsVideoFromImages({
       inputs.input(item.file);
 
       // 使用 zoompan 滤镜创建 Ken Burns 效果
-      const motion = generateKenBurnsMotion(index);
+      const motion = generateKenBurnsMotion(index, enableShake, shakeIntensity);
         
       // 构建 zoompan 滤镜参数，使用更大的缩放幅度和平滑的线性插值
       const zoomPanFilter = [
         `zoompan=z='${motion.startZoom}+(${motion.endZoom}-${motion.startZoom})*(on-1)/(${totalFrames}-1)'`,
-        `x='(iw-iw/zoom)/2'`, // 始终居中
-        `y='(ih-ih/zoom)/2'`, // 始终居中
+        `x='${motion.startX}*iw+(${motion.endX}-${motion.startX})*iw*(on-1)/(${totalFrames}-1)-iw/zoom/2'`,
+        `y='${motion.startY}*ih+(${motion.endY}-${motion.startY})*ih*(on-1)/(${totalFrames}-1)-ih/zoom/2'`,
         `d=${totalFrames}`,
         `s=${resolution || '1280x720'}`,
         `fps=${fps}`,
@@ -586,9 +617,20 @@ export async function createKenBurnsVideoFromImages({
     }
 
     // 如果有字幕，生成ASS文件并添加字幕滤镜
-    if (assEvents.length > 0) {
-      const assFile = imageFiles[0].createOutput('temp_subtitle.ass');
-      const assText = generateASS(assEvents);
+    if (assEvents.length > 0 || subtitles) {
+      let assFile: string;
+      let assText: string;
+      
+      if (subtitles) {
+        // 如果提供了卡拉OK字幕参数，生成卡拉OK字幕
+        assFile = imageFiles[0].createOutput('karaoke_subtitle.ass');
+        assText = generateAssSubtitleForSong(subtitles.title, subtitles.author, subtitles.words);
+      } else {
+        // 使用原有的字幕生成逻辑
+        assFile = imageFiles[0].createOutput('temp_subtitle.ass');
+        assText = generateASS(assEvents);
+      }
+      
       await fsPromises.writeFile(assFile, assText, 'utf-8');
       const fontsdir = path.resolve(__dirname, '..', '..', 'fonts');
       
@@ -649,4 +691,100 @@ export async function createKenBurnsVideoFromImages({
         .run();
     }
   });
+}
+
+export function generateAssSubtitleForSong(
+  title: string,
+  author: string,
+  words: IAssSongPart[],
+): string {
+  // ASS 字幕文件头部
+  const header = [
+    '[Script Info]',
+    `Title: ${title}`,
+    `Original Script: ${author}`,
+    'ScriptType: v4.00+',
+    'Collisions: Normal',
+    'PlayResX: 1920',
+    'PlayResY: 1080',
+    'Timer: 100.0000',
+    '',
+    '[V4+ Styles]',
+    'Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding',
+    'Style: Default,Arial,54,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1',
+    'Style: Karaoke,Arial,54,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,8,10,10,10,1',
+    'Style: KaraokeHighlight,Arial,54,&H0000FFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,8,10,10,10,1',
+    '',
+    '[Events]',
+    'Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text',
+  ].join('\n');
+
+  // 生成对话事件
+  const events: string[] = [];
+  
+  // 添加标题和作者信息
+  events.push(`Dialogue: 0,0:00:00.00,0:00:03.00,Default,,0,0,0,,{\\an8}${title} - ${author}`);
+  
+  // 处理每个部分的歌词
+  words.forEach((part, partIndex) => {
+    // 处理整句歌词（显示在底部）
+    if (part.text && part.words && part.words.length > 0) {
+      const firstWord = part.words[0];
+      const lastWord = part.words[part.words.length - 1];
+      
+      // 计算开始和结束时间
+      const startTime = firstWord.start_time;
+      // 如果最后一个词是空白或标点，使用前一个词的结束时间
+      const endTime = lastWord.text.trim() ? lastWord.end_time : 
+        (part.words.length > 1 ? part.words[part.words.length - 2].end_time : firstWord.end_time);
+      
+      // 转换时间格式为 ASS 格式 (h:mm:ss.cc)
+      const startTimeFormatted = formatAssTime(startTime);
+      const endTimeFormatted = formatAssTime(endTime);
+      
+      // 添加整句歌词对话行
+      events.push(`Dialogue: 0,${startTimeFormatted},${endTimeFormatted},Default,,0,0,0,,{\\an2}${part.text}`);
+      
+      // 处理逐字卡拉OK效果
+      part.words.forEach((word, wordIndex) => {
+        if (word.text.trim()) { // 忽略空白词
+          const wordStartTime = formatAssTime(word.start_time);
+          const wordEndTime = formatAssTime(word.end_time);
+          
+          // 计算这个词在整句中的位置
+          const beforeText = part.words.slice(0, wordIndex)
+            .map((w) => w.text)
+            .join('');
+          const currentText = word.text;
+          const afterText = part.words.slice(wordIndex + 1)
+            .map((w) => w.text)
+            .join('');
+          
+          // 构建卡拉OK效果文本
+          // 前面的文字已高亮，当前文字正在高亮，后面的文字未高亮
+          const karaokeText = `{\\an8}{\\k0}${beforeText}{\\k${Math.round((word.end_time - word.start_time) / 10)}}${currentText}{\\k0}${afterText}`;
+          
+          events.push(`Dialogue: 0,${wordStartTime},${wordEndTime},KaraokeHighlight,,0,0,0,,${karaokeText}`);
+        }
+      });
+    }
+  });
+  
+  // 合并头部和事件部分
+  return `${header}\n${events.join('\n')}`;
+}
+
+/**
+ * 将毫秒时间转换为 ASS 字幕格式的时间字符串
+ * @param ms 毫秒时间
+ * @returns 格式化的时间字符串 (h:mm:ss.cc)
+ */
+function formatAssTime(ms: number): string {
+  const totalSeconds = ms / 1000;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = Math.floor(totalSeconds % 60);
+  const centiseconds = Math.floor((ms % 1000) / 10);
+  
+  return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
 }

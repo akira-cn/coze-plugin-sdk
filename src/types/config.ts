@@ -83,9 +83,21 @@ export interface SceneItem {
   audioDelay?: number; // 音频延迟播放时间（秒），默认0.5
 }
 
+export interface IAssSongPart {
+  words: {
+    end_time: number;
+    start_time: number;
+    text: string;
+  }[];
+  text: string
+}
+
 export interface KenBurnsOptions {
   scenes: SceneItem[];
   resolution?: string;   // 默认 1280x720
   fadeDuration?: number; // 默认 1 秒
   fps?: number;          // 默认 25
+  enableShake?: boolean; // 是否启用抖动效果，默认 false
+  shakeIntensity?: number; // 抖动强度，默认 0.02（2%）
+  subtitles?: { title: string; author: string; words: IAssSongPart[] }; // 卡拉OK字幕参数
 }
