@@ -724,7 +724,7 @@ export function generateAssSubtitleForSong(
   const events: string[] = [];
   
   // 添加标题和作者信息
-  events.push(`Dialogue: 0,0:00:00.00,0:00:03.00,Default,,0,0,0,,{\\an8}${title} - ${author}`);
+  events.push(`Dialogue: 0,0:00:00.00,0:00:03.00,Default,,0,0,0,,{\\an5\\fs80}${title} - ${author}`);
   
   // 处理每个部分的歌词
   sentences.forEach((part, partIndex) => {
@@ -744,11 +744,11 @@ export function generateAssSubtitleForSong(
       const endTimeFormatted = formatAssTime(endTime);
       
       // 添加整句歌词对话行
-      events.push(`Dialogue: 0,${startTimeFormatted},${endTimeFormatted},Default,,0,0,0,,{\\an2}${part.text}`);
+      events.push(`Dialogue: 0,${startTimeFormatted},${endTimeFormatted},Default,,0,0,0,,{\\an2\\fnSource Han Sans CN}${part.text}`);
       
       // 处理逐字卡拉OK效果
       // 为整句创建一个卡拉OK行，包含所有单词的时间信息
-      let karaokeText = '{\\an8}';
+      let karaokeText = '{\\an8\\fnSource Han Sans CN}';
       part.words.forEach((word) => {
         if (word.text.trim()) {
           // 计算每个词的持续时间（以厘秒为单位）
@@ -766,7 +766,9 @@ export function generateAssSubtitleForSong(
   });
   
   // 合并头部和事件部分
-  return `${header}\n${events.join('\n')}`;
+  const ret = `${header}\n${events.join('\n')}`;
+  // console.log(ret);
+  return ret;
 }
 
 /**
