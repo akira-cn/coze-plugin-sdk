@@ -1,13 +1,13 @@
 import ffmpeg from 'fluent-ffmpeg';
-import ffmpegStatic from 'ffmpeg-static';
-import fs, { existsSync, promises as fsPromises } from 'node:fs';
+import ffmpegPath from 'ffmpeg-static';
+import { promises as fs, existsSync } from 'node:fs';
 import path from 'node:path';
-import { downloadFile, downloadFiles, getTempPath } from '../core';
 import { detectMimeType } from './utils';
+import { downloadFile, downloadFiles } from '../core';
 import { KenBurnsOptions } from '../types/config';
 
-if(ffmpegStatic && existsSync(ffmpegStatic)) {
-  ffmpeg.setFfmpegPath(ffmpegStatic as string);
+if(ffmpegPath && existsSync(ffmpegPath)) {
+  ffmpeg.setFfmpegPath(ffmpegPath as string);
 }
 
 
@@ -33,7 +33,7 @@ export async function convertAudio(
   try {
     // 如果未提供源类型，则尝试检测
     if (!srcType) {
-      const buffer = await fsPromises.readFile(inputFile.file);
+      const buffer = await fs.readFile(inputFile.file);
       const mimeType = detectMimeType(buffer);
       
       if (!mimeType || !mimeType.startsWith('audio/')) {
@@ -192,7 +192,7 @@ export async function burnASSSubtitleToVideo(
   const videoFile = await downloadFile(videoUrl, 'input.mp4');
   const assFile = videoFile.createOutput('temp_subtitle.ass');
   const assText = generateASS(contents);
-  await fsPromises.writeFile(assFile, assText, 'utf-8');
+  await fs.writeFile(assFile, assText, 'utf-8');
   const outputFile = videoFile.createOutput('output.mp4');
 
   const fontsdir = path.resolve(__dirname, '..', '..', 'fonts');
@@ -271,7 +271,7 @@ export async function joinVideos(
     .join('\n');
   
   // 写入文件列表
-  await fsPromises.writeFile(listFile, fileListContent, 'utf-8');
+  await fs.writeFile(listFile, fileListContent, 'utf-8');
   
   // 创建输出文件路径
   const outputFile = videoFiles[0].createOutput(`joined_video.${outputFormat}`);
@@ -369,7 +369,7 @@ export async function mergeWithDelayAndStretch(
         marginR: 60,
       },
     ]);
-    await fsPromises.writeFile(assFile, assText, 'utf-8');
+    await fs.writeFile(assFile, assText, 'utf-8');
     const fontsdir = path.resolve(__dirname, '..', '..', 'fonts');
     filterComplex = `${filterComplex};[v]ass=${assFile}:fontsdir=${fontsdir}[vout]`;
   }
@@ -417,20 +417,8 @@ function generateKenBurnsMotion(index: number) {
   };
 }
 
-/**
- * 将秒数转换为ASS时间格式 (H:MM:SS.CC)
- */
-function formatTime(seconds: number): string {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-  const centiseconds = Math.floor((seconds % 1) * 100);
-  
-  return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
-}
-
 export async function createKenBurnsVideoFromImages({
-  scenes,
+  images,
   resolution,
   fadeDuration = 0.2,
   fps = 25,
@@ -441,7 +429,7 @@ export async function createKenBurnsVideoFromImages({
 
     // 下载所有图片
     const imageFiles = await downloadFiles(
-      scenes.map(({ url }, index) => ({
+      images.map(({ url }, index) => ({
         url,
         filename: `video_scene_${index + 1}.png`,
       })),
@@ -474,32 +462,8 @@ export async function createKenBurnsVideoFromImages({
 
     const outputPath = imageFiles[0].createOutput('output.mp4');
 
-    // 收集所有字幕信息，用于生成ASS文件
-    const assEvents: IAssEvents[] = [];
-    // 收集所有音频信息
-    let audioFiles: Array<{ file: string; start: number; delay: number }> = [];
-    let currentTime = 0;
-
-    const audios = scenes.map((scene, index) => ({ url: scene.audio || '', filename: `audio_${index}` }));
-    if(audios[0].url) {
-      const downloadedFiles = await downloadFiles(audios);
-      audioFiles = downloadedFiles.map((item, index) => {
-        const ret = {
-          file: item.file,
-          start: currentTime,
-          delay: scenes[index].audioDelay || 0.5,
-        };
-        currentTime += scenes[index].duration;
-        return ret;
-      });
-    }
-
-    // 重置时间计数器
-    currentTime = 0;
-
-    imageFiles.forEach((item: any, index: number) => {
-      const scene = scenes[index];
-      const { duration, subtitle, subtitlePosition = 'bottom', subtitleDelay = 0, subtitleFontSize = 60 } = scene;
+    imageFiles.forEach((item, index) => {
+      const { duration } = images[index];
       const totalFrames = Math.floor(duration * fps);
       const fadeOutStartTime = Math.max(0, duration - fadeDuration);
 
@@ -514,138 +478,41 @@ export async function createKenBurnsVideoFromImages({
         `x='(iw-iw/zoom)/2'`, // 始终居中
         `y='(ih-ih/zoom)/2'`, // 始终居中
         `d=${totalFrames}`,
-        `s=${resolution || '1280x720'}`,
+        `s=${resolution}`,
         `fps=${fps}`,
       ].join(':');
 
-      const filterChain = `[${index}:v]${zoomPanFilter},fade=t=in:st=0:d=${fadeDuration},fade=t=out:st=${fadeOutStartTime}:d=${fadeDuration}`;
-      
-      // 收集字幕信息
-      if (subtitle) {
-        const subtitleStart = currentTime + subtitleDelay;
-        const subtitleEnd = currentTime + duration - fadeDuration;
-        
-        // 根据位置设置对齐方式和边距
-        let alignment = 2; // 底部居中
-        let marginV = 100;
-        
-        if (subtitlePosition === 'top') {
-          alignment = 8; // 顶部居中
-          marginV = 50;
-        } else if (subtitlePosition === 'middle') {
-          alignment = 5; // 中间居中
-          marginV = 0;
-        }
-        
-        assEvents.push({
-          text: replaceChineseWithFontTag(subtitle),
-          start: formatTime(subtitleStart),
-          end: formatTime(subtitleEnd),
-          effect: `{\\an${alignment}\\fs${subtitleFontSize}}`,
-          marginV,
-          marginL: 60,
-          marginR: 60,
-        });
-      }
-      
       const label = `[v${index}]`;
-      filters.push(filterChain + label);
-      
-      currentTime += duration;
+      const filter = `[${index}:v]` +
+        `${zoomPanFilter},` +
+        `fade=t=in:st=0:d=${fadeDuration},` +
+        `fade=t=out:st=${fadeOutStartTime}:d=${fadeDuration}` +
+        `${label}`;
+
+      filters.push(filter);
     });
 
-    const concatInputs = scenes.map((_, i) => `[v${i}]`).join('');
-    let filterComplex = [
+    const concatInputs = images.map((_, i) => `[v${i}]`).join('');
+    const filterComplex = [
       ...filters,
-      `${concatInputs}concat=n=${scenes.length}:v=1:a=0[outv]`,
+      `${concatInputs}concat=n=${images.length}:v=1:a=0[outv]`,
     ];
 
-    // 添加音频输入和处理
-    const audioInputCount = imageFiles.length;
-    const audioFilters: string[] = [];
-    
-    if (audioFiles.length > 0) {
-      // 为每个音频文件添加输入
-      audioFiles.forEach((audioInfo, index) => {
-        inputs.input(audioInfo.file);
-        const audioIndex = audioInputCount + index;
-        const startTime = audioInfo.start + audioInfo.delay;
-        
-        // 为每个音频添加延迟滤镜
-        audioFilters.push(`[${audioIndex}:a]adelay=${Math.round(startTime * 1000)}|${Math.round(startTime * 1000)}[a${index}]`);
-      });
-      
-      // 如果有多个音频，需要混音
-      if (audioFiles.length > 1) {
-        const audioInputs = audioFiles.map((_, i) => `[a${i}]`).join('');
-        audioFilters.push(`${audioInputs}amix=inputs=${audioFiles.length}:duration=longest[outa]`);
-      } else {
-        audioFilters.push(`[a0]anull[outa]`);
-      }
-    }
-
-    // 如果有字幕，生成ASS文件并添加字幕滤镜
-    if (assEvents.length > 0) {
-      const assFile = imageFiles[0].createOutput('temp_subtitle.ass');
-      const assText = generateASS(assEvents);
-      await fsPromises.writeFile(assFile, assText, 'utf-8');
-      const fontsdir = path.resolve(__dirname, '..', '..', 'fonts');
-      
-      // 修改滤镜链，添加ASS字幕
-      filterComplex = [
-        ...filters,
-        `${concatInputs}concat=n=${scenes.length}:v=1:a=0[v_concat]`,
-        `[v_concat]ass=${assFile}:fontsdir=${fontsdir}[outv]`,
-      ];
-    }
-
-    // 添加音频滤镜到复合滤镜中
-    if (audioFilters.length > 0) {
-      filterComplex = [...filterComplex, ...audioFilters];
-    }
-
-    // 构建输出选项
-    const outputOptions = ['-pix_fmt yuv420p'];
-    
-    if (audioFiles.length > 0) {
-      outputOptions.push('-c:a aac', '-b:a 128k');
-      inputs
-        .complexFilter(filterComplex, ['outv', 'outa'])
-        .outputOptions(outputOptions)
-        .output(outputPath)
-        .on('start', (command) => {
-          console.log('[ffmpeg start]', command);
-        })
-        .on('error', (err) => {
-          console.error('[ffmpeg error]', err.message);
-          const tmpDir = getTempPath(audioFiles[0].file);
-          fs.rmSync(tmpDir, { recursive: true, force: true });
-          reject(err);
-        })
-        .on('end', () => {
-          console.log('✅ 视频生成完成:', outputPath);
-          const tmpDir = getTempPath(audioFiles[0].file);
-          fs.rmSync(tmpDir, { recursive: true, force: true });
-          resolve(outputPath);
-        })
-        .run();
-    } else {
-      inputs
-        .complexFilter(filterComplex, 'outv')
-        .outputOptions(outputOptions)
-        .output(outputPath)
-        .on('start', (command) => {
-          console.log('[ffmpeg start]', command);
-        })
-        .on('error', (err) => {
-          console.error('[ffmpeg error]', err.message);
-          reject(err);
-        })
-        .on('end', () => {
-          console.log('✅ 视频生成完成:', outputPath);
-          resolve(outputPath);
-        })
-        .run();
-    }
+    inputs
+      .complexFilter(filterComplex, 'outv')
+      .outputOptions(['-pix_fmt yuv420p'])
+      .output(outputPath)
+      .on('start', (command) => {
+        console.log('[ffmpeg start]', command);
+      })
+      .on('error', (err) => {
+        console.error('[ffmpeg error]', err.message);
+        reject(err);
+      })
+      .on('end', () => {
+        console.log('✅ 视频生成完成:', outputPath);
+        resolve(outputPath);
+      })
+      .run();
   });
 }
