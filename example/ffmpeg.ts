@@ -114,7 +114,7 @@ async function main(): Promise<void> {
   //   console.error('Ken Burns 视频生成失败:', error);
   // }
 
-  const words = [
+  const sentences = [
     {
       "words": [
         {
@@ -879,7 +879,7 @@ async function main(): Promise<void> {
   const assResult = await generateAssSubtitleForSong(
     title,
     author,
-    words,
+    sentences,
   );
 
   console.log(assResult);

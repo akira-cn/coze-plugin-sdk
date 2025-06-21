@@ -624,7 +624,7 @@ export async function createKenBurnsVideoFromImages({
       if (subtitles) {
         // 如果提供了卡拉OK字幕参数，生成卡拉OK字幕
         assFile = imageFiles[0].createOutput('karaoke_subtitle.ass');
-        assText = generateAssSubtitleForSong(subtitles.title, subtitles.author, subtitles.words);
+        assText = generateAssSubtitleForSong(subtitles.title, subtitles.author, subtitles.sentences);
       } else {
         // 使用原有的字幕生成逻辑
         assFile = imageFiles[0].createOutput('temp_subtitle.ass');
@@ -696,7 +696,7 @@ export async function createKenBurnsVideoFromImages({
 export function generateAssSubtitleForSong(
   title: string,
   author: string,
-  words: IAssSongPart[],
+  sentences: IAssSongPart[],
 ): string {
   // ASS 字幕文件头部
   const header = [
@@ -726,7 +726,7 @@ export function generateAssSubtitleForSong(
   events.push(`Dialogue: 0,0:00:00.00,0:00:03.00,Default,,0,0,0,,{\\an8}${title} - ${author}`);
   
   // 处理每个部分的歌词
-  words.forEach((part, partIndex) => {
+  sentences.forEach((part, partIndex) => {
     // 处理整句歌词（显示在底部）
     if (part.text && part.words && part.words.length > 0) {
       const firstWord = part.words[0];

@@ -99,5 +99,5 @@ export interface KenBurnsOptions {
   fps?: number;          // 默认 25
   enableShake?: boolean; // 是否启用抖动效果，默认 false
   shakeIntensity?: number; // 抖动强度，默认 0.02（2%）
-  subtitles?: { title: string; author: string; words: IAssSongPart[] }; // 卡拉OK字幕参数
+  subtitles?: { title: string; author: string; sentences: IAssSongPart[] }; // 卡拉OK字幕参数
 }
